@@ -1,4 +1,29 @@
 # Deroute
+This branch contains the search tools used by the Deroute extension. Currently the following are working:
+### Search:
+The search tool will find the nearest neighbors of given database of dense vectors.
+``` shell
+search database_path query_path k_neighbors
+```
+- `database_path` path to binary file of dense vectors to be searched <br>
+- `query_path` path to binary file of query vectors<br>
+- `k_neighbors` number of neighbors to be returned<br>
+### Embed:
+The embed tool will take a single line of plain text and return a dense vector representation of it in the form of a binary file.
+``` shell
+embed model_path input_path output_path write_type
+```
+- `model_path` path to the word embedding model<br>
+- `input_path` path to plain text<br>
+- `output_path` path to output vector<br>
+- `write_type` either "append" to add a vector to existing file or "new" to create a new file<br>
+
+### Website Parser:
+The website parser will take a html file of a website and parse it down to its relevant content
+``` shell
+python src/parse_website.py html_file
+```
+- `html_file` path to html file of a website<br>
 
 # Building similarity search tools from source
 ### Requirments
