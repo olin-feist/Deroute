@@ -1,16 +1,11 @@
 from bs4 import BeautifulSoup
 import re
-import requests
-import os
 import sys
 import num2words
 import justext
 
 #cmd line args
 arg = sys.argv[1]
-#arg = arg.replace('\r', '')
-#arg = arg.replace('\n', '')
-#html = requests.get(arg) #get website
  
 page = open(arg,encoding="utf8")
 soup = BeautifulSoup(page.read(), 'html.parser')
