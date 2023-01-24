@@ -53,3 +53,9 @@ Current targets include:
 * search
 * embed
 * vectools
+
+# Test Scripts
+### build_dataset.sh
+Builds a dataset of websites taken from `data/urls.txt`
+### query.sh
+Querys dataset built by previous script using query build from `data/query_plain.txt`
