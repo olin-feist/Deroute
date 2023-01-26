@@ -1,14 +1,17 @@
 from bs4 import BeautifulSoup
 import re
+import requests
 import sys
 import num2words
 import justext
 
 #cmd line args
 arg = sys.argv[1]
- 
-page = open(arg,encoding="utf8")
-soup = BeautifulSoup(page.read(), 'html.parser')
+arg = arg.replace('\r', '')
+arg = arg.replace('\n', '')
+html = requests.get(arg) #get website
+
+soup = BeautifulSoup(html.content, 'html.parser')
 
 # Find the footer element in the HTML
 footer = soup.find('footer')
