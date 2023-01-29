@@ -28,11 +28,41 @@ int vectools::print_vectors(std::string path){
         
 }
 
-int vectools::average_vectors(float* data){
+int vectools::mul_vector(float* v1, float mult, int size){
+    for (int i = 0; i < size; i++) {
+        v1[i] *= mult;
+    }
     return 0;
 }
 
+int vectools::add_vectors(float* v1, float* v2, int size){
+    for (int i = 0; i < size; i++) {
+        v1[i] += v2[i];
+    }
+    return 0;
+}
 
-int main(){
-    vectools::print_vectors("data/vectors.bin");
+float* vectools::read_vectors(std::string path, int *d, int *n){
+    std::ifstream file;
+
+    file.open(path,std::ios::binary);
+    if(!file) {
+        std::cerr << "Cannot open file!" << std::endl;
+        return NULL;
+    } 
+    int dimensions;
+    int entrys;
+    file.read((char*) &dimensions, sizeof(int)); // dimension
+    file.read((char*) &entrys, sizeof(int)); // database size
+    float *vec = new float[dimensions*entrys];
+    
+    //get database
+    for(int i=0;i<entrys;i++){
+        file.read((char*) &vec[dimensions*i], sizeof(float)*dimensions);
+    }
+
+    file.close();
+    *d=dimensions;
+    *n=entrys;
+    return vec;
 }
