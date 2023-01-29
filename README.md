@@ -1,5 +1,5 @@
 # Deroute
-This branch contains the search tools used by the Deroute extension. Currently the following are working:
+This branch contains the search tools used by the Deroute extension.
 ### Search:
 The search tool will find the nearest neighbors of given database of dense vectors.
 ``` shell
@@ -18,12 +18,19 @@ embed model_path input_path output_path write_type
 - `output_path` path to output vector<br>
 - `write_type` either "append" to add a vector to existing file or "new" to create a new file<br>
 
+### Locally Sensitive Hashing:
+Given a binary file of vectors will compute and print the corresponding 128bit hash value.
+``` shell
+lsh vectors_path
+```
+- `vectors_path` path to binary file of dense vectors to be hashed <br>
+
 ### Website Parser:
 The website parser will take a html file of a website and parse it down to its relevant content
 ``` shell
-python src/parse_website.py html_file
+python src/parse_website.py url
 ```
-- `html_file` path to html file of a website<br>
+- `url` url of website to be parsed<br>
 
 # Building similarity search tools from source
 ### Requirments
@@ -31,6 +38,7 @@ python src/parse_website.py html_file
 * Mingw64 compiler
 * Intel MKL
   * mkl_rt.2.dll
+  * mkl_intel_thread.2.dll
 * FAISS
   * include directories
   * libfaiss.dll.a
@@ -53,6 +61,7 @@ Current targets include:
 * search
 * embed
 * vectools
+* lsh
 
 # Test Scripts
 ### build_dataset.sh
