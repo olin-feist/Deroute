@@ -5,11 +5,5 @@
     "permissions": ["history"],
     "action": {
         "default_popup": "popup/popup.html"
-    },
-    "content_security_policy": {
-        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
-    },
-    "sandbox": {
-        "pages": ["popup/popup_sandbox.html"]
     }
   }
