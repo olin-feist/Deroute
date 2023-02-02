@@ -2,9 +2,42 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
-
+#include <fcntl.h>
+#include <iostream>
+#include <regex>
 using namespace fasttext;
 //.\bin\embed.exe bin/wiki.en.bin data/website_plain.txt data/vectors.bin append
+
+std::string pre_process(std::string sentence){
+
+
+    int pos;
+    while ((pos = sentence.find("=")) != std::string::npos)
+        sentence.replace(pos, 1, "equals");                 // replace = with equals
+
+    while ((pos = sentence.find("+")) != std::string::npos)
+        sentence.replace(pos, 1, "plus");                   // replace + with plus
+
+    
+    std::regex non_ascii(R"([^\w])"); // remove on ascii character
+    sentence = std::regex_replace(sentence, non_ascii, " ");
+
+    std::transform(sentence.begin(), sentence.end(), sentence.begin(), // set lowercase
+    [](unsigned char c){ return std::tolower(c); });
+
+    std::regex non_letter(R"([^a-zA-Z])"); // remove non letter
+    sentence = std::regex_replace(sentence, non_letter, " ");
+    
+    std::regex single_words(R"(\b[b-hj-z]\b)"); // remove single words
+    sentence = std::regex_replace(sentence, single_words, "");
+
+    std::regex extra_spaces(R"(' +')"); // remove extra spaces
+    sentence = std::regex_replace(sentence, non_letter, " ");
+
+    sentence = std::regex_replace(sentence, std::regex("^ +| +$|( ) +"), "$1"); //remove trailing and leading whitespaces
+    return sentence;
+
+}
 
 //get sentence vectors
 Vector getVector(std::string model_path){
@@ -12,8 +45,16 @@ Vector getVector(std::string model_path){
     fasttext.loadModel(model_path); //load model
 
     Vector svec(fasttext.getDimension());
-    fasttext.getSentenceVector(std::cin, svec); // compute first sentence vector
 
+    std::stringstream input_stream;
+    input_stream << std::cin.rdbuf();
+    std::string sentence = input_stream.str();
+
+    
+    sentence=pre_process(sentence);
+    std::stringstream fstring_string(sentence);
+    fasttext.getSentenceVector(fstring_string, svec); // compute first sentence vector
+    
     return svec;
 }
 
@@ -79,7 +120,6 @@ int storeVector(std::string path, Vector vec){
 
 
 int main(int argc, char* argv[]){
-
     if(argc>3){
         std::cerr<< "Invalid Number of Args" << std::endl;
         std::cerr<< "usage: embed <model_path> <optional_output_path>" << std::endl;
@@ -94,10 +134,14 @@ int main(int argc, char* argv[]){
 
     //write to stdout
     }else{
-        for(int i=0;i<svec.size();i++){
+        setmode(fileno(stdout), O_BINARY);
+        int dimensions=svec.size();
+        int n=1;
+        std::cout.write((char*) &dimensions, sizeof(int));
+        std::cout.write((char*) &n, sizeof(int));
+        for(int i=0;i<dimensions;i++){
              std::cout.write((char*) &svec[i], sizeof(float));
         }
     }
-
     return 0;
 }
