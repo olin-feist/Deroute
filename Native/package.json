@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "chrome-native-messaging": "^0.2.0"
+  }
+}

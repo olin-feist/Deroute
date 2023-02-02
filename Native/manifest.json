@@ -1,0 +1,9 @@
+{
+    "name": "deroute_controller",
+    "description": "Test Chrome native messaging",
+    "path": "parrot.bat",
+    "type": "stdio",
+    "allowed_origins": [
+      "chrome-extension://cppmendngpjebhcejjiigecmnknlpojb/"
+    ]
+  }
