@@ -7,27 +7,23 @@ using namespace fasttext;
 //.\bin\embed.exe bin/wiki.en.bin data/website_plain.txt data/vectors.bin append
 
 //get sentence vectors
-Vector getVector(std::string model_path, std::string input_path){
+Vector getVector(std::string model_path){
     FastText fasttext;
     fasttext.loadModel(model_path); //load model
 
-    std::fstream file;
-    file.open(input_path,std::ios::in); //get website
-
     Vector svec(fasttext.getDimension());
-    fasttext.getSentenceVector(file, svec); // compute first sentance vector
+    fasttext.getSentenceVector(std::cin, svec); // compute first sentence vector
 
     return svec;
 }
 
 //add vector to binary file
-int storeVector(int append, std::string path, Vector vec){
+int storeVector(std::string path, Vector vec){
 
-
-    //if appending new vector
-    if(append){
-        std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
-        
+    std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
+    
+    //if appending new vector to existing file
+    if(append_f.good()){
         if(!append_f) {
             std::cerr << "Cannot open file!" << std::endl;
             return 1;
@@ -56,7 +52,6 @@ int storeVector(int append, std::string path, Vector vec){
 
     //new file
     }else{
-
         std::ofstream write_f(path, std::ios::out | std::ios::binary);
         if(!write_f) {
             std::cerr << "Cannot open file!" << std::endl;
@@ -71,48 +66,38 @@ int storeVector(int append, std::string path, Vector vec){
         int elements=1;
         write_f.write((char*) &elements, sizeof(int));
 
-        int start=0;
-        int increment=0;
         for(int i=0;i<dimension;i++){
             write_f.write((char*) &vec[i], sizeof(float));
         }
-
         write_f.close();
+       
     }
-    
+
+    append_f.close();
     return 0;
 }
 
 
 int main(int argc, char* argv[]){
 
-    if(argc!=5){
+    if(argc>3){
         std::cerr<< "Invalid Number of Args" << std::endl;
-        std::cerr<< "usage: embed <model_path> <input_path> <output_path> <apppend | new>" << std::endl;
+        std::cerr<< "usage: embed <model_path> <optional_output_path>" << std::endl;
         return 1;
     }
 
     //get sentence vector
-    Vector svec=getVector(argv[1],argv[2]);
-    
-    //storing vector
-    if(strcmp(argv[4], "append")==0){
-        storeVector(1,argv[3],svec);
-    }else if(strcmp(argv[4], "new")==0){
-        storeVector(0,argv[3],svec);
+    Vector svec=getVector(argv[1]);
+    //if output path specified
+    if(argc==3){
+        storeVector(argv[2],svec);
+
+    //write to stdout
     }else{
-        std::cerr<< "Invalid write operation arg" << std::endl;
-        std::cerr<< "Expected append or new" << std::endl;
-        return 1;
+        for(int i=0;i<svec.size();i++){
+             std::cout.write((char*) &svec[i], sizeof(float));
+        }
     }
 
-    //std::ifstream rf(argv[3], std::ios::binary);
-    /*FastText fasttext;
-    fasttext.loadModel("bin/wiki.en.bin"); //load model
-    Args a= Args();
-    a.input="bin/wiki.en.bin";
-    a.output="bin/quantize.bin";
-    fasttext.quantize(a);
-    fasttext.saveModel("bin/quantize.bin");*/
     return 0;
 }
