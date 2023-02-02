@@ -63,6 +63,6 @@ Current targets include:
 
 # Test Scripts
 ### build_dataset.sh
-Builds a dataset of websites taken from `data/urls.txt`
+Builds a dataset of websites taken from a text file of urls passed via command line
 ### query.sh
-Querys dataset built by previous script using query build from `data/query_plain.txt`
+Querys dataset built by previous script using query built from `data/query_plain.txt`
