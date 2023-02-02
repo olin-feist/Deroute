@@ -19,6 +19,7 @@ footer = soup.find('footer')
 # Remove the footer element from the HTML
 if footer:
     footer.decompose()
+    
 
 updated_html = soup.encode("utf-8") #html after removing elements
 
@@ -31,17 +32,19 @@ for paragraph in paragraphs:
         filtered_content+='\n'
 
 #pre-proccess data for fastText
-filtered_content = filtered_content.replace("=", "equals")
-filtered_content = filtered_content.replace("+", "plus" )
-filtered_content=filtered_content.lower() #lowercase
+#filtered_content = filtered_content.replace("=", "equals")
+#filtered_content = filtered_content.replace("+", "plus" )
+#filtered_content=filtered_content.lower() #lowercase
 filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0))), filtered_content) #convert numbers to words
-filtered_content=re.sub(r'[^\w]', ' ', filtered_content) #remove non ascii character
-regex = re.compile('[^a-zA-Z]') #remove non letters
-filtered_content=regex.sub(' ', filtered_content) #remove non letter character
-filtered_content=re.sub(r'\b[b-hj-z]\b', '', filtered_content) #remove single letter words that arent (a and i)
-filtered_content=re.sub(r' +', ' ',filtered_content) #remove extra spaces
-filtered_content=filtered_content.strip()
-#save cotent
+
+#filtered_content=re.sub(r'[^\w]', ' ', filtered_content) #remove non ascii character
+
+#regex = re.compile('[^a-zA-Z]') #remove non letters
+#filtered_content=regex.sub(' ', filtered_content) #remove non letter character
+#filtered_content=re.sub(r'\b[b-hj-z]\b', '', filtered_content) #remove single letter words that arent (a and i)
+#filtered_content=re.sub(r' +', ' ',filtered_content) #remove extra spaces
+#filtered_content=filtered_content.strip()
+#save content
 with open('data/website_plain.txt', 'w',encoding="utf-8") as f:
     f.write(filtered_content)
 
