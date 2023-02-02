@@ -1,0 +1,9 @@
+{
+    "manifest_version": 3,
+    "name": "Deroute",
+    "version": "1.0",
+    "permissions": ["history", "nativeMessaging"],
+    "action": {
+        "default_popup": "popup/popup.html"
+    }
+  }
