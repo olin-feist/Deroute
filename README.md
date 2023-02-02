@@ -9,14 +9,12 @@ search database_path query_path k_neighbors
 - `query_path` path to binary file of query vectors<br>
 - `k_neighbors` number of neighbors to be returned<br>
 ### Embed:
-The embed tool will take a single line of plain text and return a dense vector representation of it in the form of a binary file.
+The embed tool will take a single line of plain text from stdin and return a dense vector representation of it in the form of a binary file.
 ``` shell
-embed model_path input_path output_path write_type
+embed model_path output_path
 ```
 - `model_path` path to the word embedding model<br>
-- `input_path` path to plain text<br>
-- `output_path` path to output vector<br>
-- `write_type` either "append" to add a vector to existing file or "new" to create a new file<br>
+- `output_path` optional parameter to specifiy output of embedding, if left unset will output vector as binary to stdout<br>
 
 ### Locally Sensitive Hashing:
 Given a binary file of vectors will compute and print the corresponding 128bit hash value.
