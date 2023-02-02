@@ -25,9 +25,8 @@
 
     var examples = {
         ping: { ping: 'pong' },
-        readdir: { readdir: '/' },
-        subscribe: { subscribe: 'time' },
-        unsubscribe: { unsubscribe: 'time' }
+        url: { url: 'https://stackoverflow.com/questions/tagged/fibonacci' },
+        query: { query: 'good breakfast foods?' }
     };
 
     Array.prototype.slice.call(document.querySelectorAll('[data-example]')).forEach(function(example) {
