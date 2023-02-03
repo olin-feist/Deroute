@@ -6,10 +6,14 @@ import num2words
 import justext
 
 #cmd line args
-arg = sys.argv[1]
-arg = arg.replace('\r', '')
-arg = arg.replace('\n', '')
-html = requests.get(arg) #get website
+url = sys.argv[1]
+url = url.replace('\r', '')
+url = url.replace('\n', '')
+html = requests.get(url) #get website
+ 
+with open("data/urls.bin", "ab") as url_bin:
+    url= url + "\0" * (300 - len(url))
+    url_bin.write(bytes(url, encoding="utf-8"))
 
 soup = BeautifulSoup(html.content, 'html.parser')
 
