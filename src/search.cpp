@@ -2,9 +2,10 @@
 #include <cstdlib>
 #include <chrono>
 #include <iostream>
+#include <fcntl.h>
 #include <fstream>
 #include <faiss/IndexFlat.h>
-//search database_path query_path k_neighbors
+//search database_path k_neighbors query_path
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
 
@@ -17,9 +18,9 @@ int main(int argc, char* args[]) {
     int nb;    // database size
     int nq;    // number of queries
     
+    std::ifstream file;
 
     //---------------------------- database file ----------------------------
-    std::ifstream file;
 
     file.open(args[1],std::ios::binary);
     if(!file) {
@@ -39,31 +40,53 @@ int main(int argc, char* args[]) {
     file.close(); 
 
     //---------------------------- query file ----------------------------
-
-    file.open(args[2],std::ios::binary); //open file
-    if(!file) {
-        std::cerr << "Cannot open file!" << std::endl;
-        return 1;
-    } 
-
-    //check error for differing dimensions
     int d_q;
-    file.read((char*) &d_q, sizeof(int));
-    if(d_q!=d){
-        std::cerr << "Query vectors and Database vectors different dimensions" <<d<<"!="<<d_q<< std::endl;
-        return 1;
-    }
+    float* queries;
+    if(argc==4){
+        
+        file.open(args[3],std::ios::binary); //open file
+        if(!file) {
+            std::cerr << "Cannot open file!" << std::endl;
+            return 1;
+        } 
 
-    file.read((char*) &nq, sizeof(int)); // number of queries
+        file.read((char*) &d_q, sizeof(int));
+        if(d_q!=d){
+            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<"!="<<d_q<< std::endl;
+            return 1;
+        }
 
-    float* queries = new float[d * nq];
+        file.read((char*) &nq, sizeof(int)); // number of queries
 
-    //get queries
-    for(int i=0;i<nq;i++){
-        file.read((char*) &queries[d*i], sizeof(float)*d);
-    }
+        queries = new float[d * nq];
+
+        //get queries
+        for(int i=0;i<nq;i++){
+            file.read((char*) &queries[d*i], sizeof(float)*d);
+        }
+        
+        file.close(); 
+    }else{
+        setmode(fileno(stdin), O_BINARY);
+        //check error for differing dimensions
+        
+        std::cin.read((char*) &d_q, sizeof(int));
+        if(d_q!=d){
+            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<" != "<<d_q<< std::endl;
+            return 1;
+        }
+
+        std::cin.read((char*) &nq, sizeof(int)); // number of queries
+
+        queries = new float[d * nq];
+
+        //get queries
+        for(int i=0;i<nq;i++){
+            std::cin.read((char*) &queries[d*i], sizeof(float)*d);
+            
+        }
+    }   
     
-    file.close(); 
     //-------------------------------------------------------------------
 
 
@@ -71,7 +94,7 @@ int main(int argc, char* args[]) {
     faiss::IndexFlatL2 index(d); // call constructor
     index.add(nb, database); // add vectors to the index
 
-    int k = std::stoi(args[3]);
+    int k = std::stoi(args[2]);
 
 
     { // search queries
@@ -97,7 +120,7 @@ int main(int argc, char* args[]) {
         for(int i=0;i<k;i++){
             printf("%f ", D[i]);
         }
-        printf("\n");
+        //printf("\n");
 
         delete[] I;
         delete[] D;
