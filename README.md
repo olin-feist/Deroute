@@ -63,6 +63,8 @@ Current targets include:
 
 # Test Scripts
 ### build_dataset.sh
-Builds a dataset of websites taken from a text file of urls passed via command line
+Builds a dataset of websites taken from a text file of urls passed via command line (example URLS in test/)
 ### query.sh
-Querys dataset built by previous script using query built from `data/query_plain.txt`
+Querys dataset built by previous script using query built from `tests/query_plain.txt`
+### query.js
+javascript file that will utilize the Deroute tools to query a dataset built from `build_dataset.sh`
