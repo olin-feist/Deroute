@@ -3,15 +3,15 @@ This branch contains the search tools used by the Deroute extension.
 ### Search:
 The search tool will find the nearest neighbors of given database of dense vectors.
 ``` shell
-search database_path query_path k_neighbors
+search database_path k_neighbors *query_path
 ```
 - `database_path` path to binary file of dense vectors to be searched <br>
-- `query_path` path to binary file of query vectors<br>
+- `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
 - `k_neighbors` number of neighbors to be returned<br>
 ### Embed:
 The embed tool will take a single line of plain text from stdin and return a dense vector representation of it in the form of a binary file.
 ``` shell
-embed model_path output_path
+embed model_path *output_path
 ```
 - `model_path` path to the word embedding model<br>
 - `output_path` optional parameter to specifiy output of embedding, if left unset will output vector as binary to stdout<br>
@@ -29,7 +29,20 @@ The website parser will take a html file of a website and parse it down to its r
 python src/parse_website.py url
 ```
 - `url` url of website to be parsed<br>
-
+# Binary Data format
+All binary data sent and recieved from Deroute tools will be in the following format <br>
+```
+[D][N]
+v0
+v1
+.
+.
+.
+vN
+```
+- <b>D</b> : 4 byte integer corresponding to dimensions of vectors
+- <b>N</b> : 4 byte integer corresponding to the number of vectors
+- <b>V</b><sub>i</sub> : Vector of 4 byte floating point values with number of elements equal to <b>[D]</b> 
 # Building similarity search tools from source
 ### Requirments
 * CMake
