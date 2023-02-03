@@ -1,6 +1,6 @@
 var exec = require('child_process').exec;
 
-var embed_cmd = '.\\bin\\embed.exe bin/model.en.bin'; //generate dense vector command
+var embed_cmd = '..\\bin\\embed.exe ..\\bin\\model.en.bin'; //generate dense vector command
 var buffer;
 
 //embedding command config
@@ -21,7 +21,7 @@ embed_p.stdin.end();
 
 //call search.exe
 function exec_search(buffer) {
-  var search_cmd = '.\\bin\\search.exe data/vectors.bin 5';//command to search for 5 nearest neighbors
+  var search_cmd = '..\\bin\\search.exe ..\\data\\vectors.bin 5';//command to search for 5 nearest neighbors
 
   //search command config
   var search_p=exec(search_cmd, {encoding: 'binary', maxBuffer: 1000}, function(error, stdout) {

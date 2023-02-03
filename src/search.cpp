@@ -1,10 +1,10 @@
 #include <cstdio>
 #include <cstdlib>
-#include <chrono>
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
 #include <faiss/IndexFlat.h>
+#include <vec_tools.h>
 //search database_path k_neighbors query_path
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
@@ -12,7 +12,6 @@ using idx_t = faiss::Index::idx_t;
 
 int main(int argc, char* args[]) {
 
-    auto start = std::chrono::high_resolution_clock::now();
 
     int d;     // dimension
     int nb;    // database size
@@ -21,51 +20,24 @@ int main(int argc, char* args[]) {
     std::ifstream file;
 
     //---------------------------- database file ----------------------------
-
-    file.open(args[1],std::ios::binary);
-    if(!file) {
-        std::cerr << "Cannot open file!" << std::endl;
+ 
+    float* database =  vectools::read_vectors(args[1], &d, &nb);
+    if(database==NULL)
         return 1;
-    } 
-
-    file.read((char*) &d, sizeof(int)); // dimension
-    file.read((char*) &nb, sizeof(int)); // database size
-    float* database = new float[d * nb];
-
-    //get database
-    for(int i=0;i<nb;i++){
-        file.read((char*) &database[d*i], sizeof(float)*d);
-    }
-    
-    file.close(); 
-
     //---------------------------- query file ----------------------------
     int d_q;
     float* queries;
+    //if input path is defined
     if(argc==4){
-        
-        file.open(args[3],std::ios::binary); //open file
-        if(!file) {
-            std::cerr << "Cannot open file!" << std::endl;
+        float* queries =  vectools::read_vectors(args[3], &d_q, &nq);
+        if(queries==NULL)
             return 1;
-        } 
 
-        file.read((char*) &d_q, sizeof(int));
         if(d_q!=d){
-            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<"!="<<d_q<< std::endl;
+            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<" != "<<d_q<< std::endl;
             return 1;
         }
 
-        file.read((char*) &nq, sizeof(int)); // number of queries
-
-        queries = new float[d * nq];
-
-        //get queries
-        for(int i=0;i<nq;i++){
-            file.read((char*) &queries[d*i], sizeof(float)*d);
-        }
-        
-        file.close(); 
     }else{
         setmode(fileno(stdin), O_BINARY);
         //check error for differing dimensions
@@ -104,24 +76,25 @@ int main(int argc, char* args[]) {
 
         index.search(nq, queries, k, D, I);
 
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-        //time
-        std::cout <<std::fixed<< "Time taken by function: "<< duration.count()*0.000001 << " seconds" << std::endl;
+
+        std::cout<<k<<"\n";
 
         // print results
-        printf("Index = ");
+        file.open("data/urls.bin",std::ios::binary);
+        char* url= new char[300];
         for(int i=0;i<k;i++){
-            printf("%5zd ", I[i]);
+            file.seekg(300* I[i], std::ios_base::beg);
+            file.read(url,300);
+            std::cout<<url<<"\n";
         }
-        printf("\n");
+        file.close();
 
-        printf("Distances = ");
         for(int i=0;i<k;i++){
             printf("%f ", D[i]);
+            std::cout<<"\n";
         }
-        //printf("\n");
 
+        delete[] url;
         delete[] I;
         delete[] D;
     }
