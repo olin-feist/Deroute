@@ -2,7 +2,6 @@ var exec = require('child_process').exec;
 
 var embed_cmd = '.\\bin\\embed.exe bin/model.en.bin'; //generate dense vector command
 var buffer;
-var buffer;
 
 //embedding command config
 var embed_p=exec(embed_cmd, {encoding: 'binary', maxBuffer: 1208}, function(error,stdout) {
