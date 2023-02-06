@@ -1,7 +1,7 @@
 //FIFO queue for storing propogated searches
 class Queue {
     que = []
-    max_length = 2
+    max_length = 20
 
     //discards First In if full
     push (obj){
@@ -16,7 +16,6 @@ class Queue {
       this.que.forEach(element => {
         if (element === obj) exists = true
       })
-      console.log(exists)
       return exists
     }
   }
