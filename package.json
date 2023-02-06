@@ -2,6 +2,7 @@
   "dependencies": {
     "b4a": "^1.6.1",
     "debounceify": "^1.0.0",
+    "fs-extra": "^11.1.0",
     "graceful-goodbye": "^1.2.0",
     "hyperbeam": "^3.0.0",
     "hypercore": "^10.7.0",

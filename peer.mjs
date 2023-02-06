@@ -2,9 +2,9 @@ import Hyperswarm from 'hyperswarm'
 import goodbye from 'graceful-goodbye'
 import crypto from 'hypercore-crypto'
 import b4a from 'b4a'
-import Hyperbeam from 'hyperbeam'
 
 import Queue from './queue.mjs'
+import * as peer_controller from './peer-controller.mjs'
 
 const swarm = new Hyperswarm()
 goodbye(() => {
@@ -13,39 +13,28 @@ goodbye(() => {
 
 const prev_searches = new Queue();
 
+const payload_type = {
+  search: 0,
+  response: 1
+}
+
 // Keep track of all connections and console.log incoming data
 const conns = []
 swarm.on('connection', conn => {
   const name = b4a.toString(conn.remotePublicKey, 'hex')
-  console.log('* got a connection from:', name, '*')
+  debug(`* got a connection from: ${name} *`)
   conns.push(conn)
   conn.once('close', () => conns.splice(conns.indexOf(conn), 1))
   conn.on('data', data => {
 
-    if(prev_searches.contains(`${data}`)) return //check to see if we have gotten data b4
+    //check to see if we have gotten data b4
+    if (prev_searches.contains(`${data}`)) return
 
-    console.log(`${name}: `, `\n original sender:`, `${data}`.slice(0,64), `\n data:`, `${data}`.slice(64)) //incoming data from hyperswarm
-    
-    prev_searches.push(`${data}`) //store to not propogate repeatively 
-    for (const conn of conns) { //propogate to all conn
-      conn.write(data)
-    }
+    processPayload(data)
+
+    //propogate message to rest of swarm
+    sendToPeers(data)
   })
-})
-
-// Broadcast stdin to all connections
-process.stdin.on('data', d => {
-  if (`${d}`.startsWith('beam')) {  //interupt send
-    console.log("pong")
-    return
-  }
-  //enter message into buffer before sending
-  d = b4a.toString(swarm.keyPair.publicKey, 'hex') + `${d}`
-  d = b4a.from(d)
-  //send
-  for (const conn of conns) {
-    conn.write(d)
-  }
 })
 
 // Join a common topic
@@ -57,18 +46,74 @@ discovery.flushed().then(() => {
   console.log('joined topic:', b4a.toString(topic, 'hex'))
 })
 
-//below is WIP
+// Broadcast stdin to all connections
+process.stdin.on('data', data => {
+  derouteSearch(0.9, data)
+})
 
-const beam = new Hyperbeam((`DerouteConnectBack` + b4a.toString(swarm.keyPair.publicKey, 'hex')))
-  // beam.key gives the passphrase
-console.log('-->passphrase: ', beam.key)
+//Send search query
+export function derouteSearch(distance_score, vector) {
+  let query = buildSearchPayload(distance_score, `${vector}`)
+  sendToPeers(query)
+}
 
+//Write to swarm
+const sendToPeers = (data) => {
+  prev_searches.push(`${data}`)
 
-const buildPayload = (distance_score, data) =>{
-  let d = swarm.keyPair.publicKey + distance_score + data
+  for (const conn of conns) {
+    conn.write(data)
+  }
+}
+
+const buildSearchPayload = (distance_score, vector) => {
+  let d = `${payload_type.search}${b4a.toString(swarm.keyPair.publicKey, 'hex')}${distance_score.toPrecision(16)}${vector}`
+  debug(`My Search Payload: ${d}\n`)
+  return b4a.from(d)
+}
+const buildResponsePayload = (user_key, url_list) => {
+  let d = '1' + user_key + url_list
+  debug(`My Response Payload: ${d}\n`)
   return b4a.from(d)
 }
 
-const debuildPayload = (data) => {
-  console.log(`${data}`.slice(0,64), `\n data:`, `${data}`.slice(64)) //incoming data from hyperswarm
+//proccess payload and call respectve fucntions
+const processPayload = (data) => {
+  let type = parseInt(`${data}`.slice(0, 1))
+  debug(`payload_type: ${type}\n`)
+  switch (type) {
+    case payload_type.search:
+      debug(`peer: ${`${data}`.slice(1, 65)}\ndistance score: ${`${data}`.slice(65, 83)}\n vector: ${`${data}`.slice(83)}\n`)
+      let user = `${data}`.slice(1, 65)
+      let distance_score = `${data}`.slice(65, 83)
+      let vector = `${data}`.slice(83)
+
+      let url_list = peer_controller.proccessSearch(distance_score, vector)
+      if (url_list.length == 0) {
+        return
+      }
+
+      sendToPeers(buildResponsePayload(user, url_list))
+
+      break;
+    case payload_type.response:
+      debug(`peer: ${`${data}`.slice(1, 65)}\nURL_LIST: ${`${data}`.slice(65, 83)}\n`)
+
+      if (b4a.toString(swarm.keyPair.publicKey, 'hex') === `${data}`.slice(1, 65)) {
+        peer_controller.recieveURL(`${data}`.slice(65))
+      }
+      break;
+    default:
+  }
+}
+
+const debug_mode = false;
+
+//enable debug mode for message prints ;)
+const debug = (msg) => {
+  if (!debug_mode) {
+    return
+  }
+  console.log(msg)
+
 }
