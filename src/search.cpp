@@ -63,7 +63,7 @@ int main(int argc, char* args[]) {
 
 
     
-    faiss::IndexFlatL2 index(d); // call constructor
+    faiss::IndexFlatIP index(d); // call constructor
     index.add(nb, database); // add vectors to the index
 
     int k = std::stoi(args[2]);
@@ -74,22 +74,40 @@ int main(int argc, char* args[]) {
         idx_t* I = new idx_t[k * nq]; //indexs
         float* D = new float[k * nq]; //distances
 
+
+        idx_t* I_1 = new idx_t[1]; //indexs
+        float* D_1 = new float[1]; 
+        
+
+
         index.search(nq, queries, k, D, I);
+        int keep_indexes=0;
+        float prev=0.0;
 
+        //find elbow
+        for(int i=1;i<k;i++){
+            if((D[i-1]-D[i])>=prev){
+                keep_indexes++;
+                prev=D[i-1]-D[i];
+            }else{
+                keep_indexes++; //inculsive (works in some cases)
+                break;
+            }
+        }
 
-        std::cout<<k<<"\n";
+        std::cout<<keep_indexes<<"\n";
 
         // print results
         file.open("data/urls.bin",std::ios::binary);
-        char* url= new char[300];
-        for(int i=0;i<k;i++){
-            file.seekg(300* I[i], std::ios_base::beg);
-            file.read(url,300);
+        char* url= new char[d];
+        for(int i=0;i<keep_indexes;i++){
+            file.seekg(d* I[i], std::ios_base::beg);
+            file.read(url,d);
             std::cout<<url<<"\n";
         }
         file.close();
 
-        for(int i=0;i<k;i++){
+        for(int i=0;i<keep_indexes;i++){
             printf("%f ", D[i]);
             std::cout<<"\n";
         }

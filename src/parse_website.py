@@ -5,6 +5,7 @@ import sys
 import num2words
 import justext
 
+
 #cmd line args
 url = sys.argv[1]
 url = url.replace('\r', '')
@@ -15,14 +16,17 @@ with open("data/urls.bin", "ab") as url_bin:
     url= url + "\0" * (300 - len(url))
     url_bin.write(bytes(url, encoding="utf-8"))
 
+
 soup = BeautifulSoup(html.content, 'html.parser')
 
 # Find the footer element in the HTML
 footer = soup.find('footer')
-
+header = soup.find('head')
 # Remove the footer element from the HTML
-if footer:
-    footer.decompose()
+#if footer:
+    #footer.decompose()
+#if header:
+    #header.decompose()
     
 
 updated_html = soup.encode("utf-8") #html after removing elements
@@ -35,11 +39,12 @@ for paragraph in paragraphs:
         filtered_content+=paragraph.text
         filtered_content+='\n'
 
-#pre-proccess data for fastText
+#pre-proccess data for fastText (off for now)
+
 #filtered_content = filtered_content.replace("=", "equals")
 #filtered_content = filtered_content.replace("+", "plus" )
 #filtered_content=filtered_content.lower() #lowercase
-filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0))), filtered_content) #convert numbers to words
+#filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0))), filtered_content) #convert numbers to words
 
 #filtered_content=re.sub(r'[^\w]', ' ', filtered_content) #remove non ascii character
 
@@ -49,6 +54,7 @@ filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0)
 #filtered_content=re.sub(r' +', ' ',filtered_content) #remove extra spaces
 #filtered_content=filtered_content.strip()
 #save content
+
 with open('data/website_plain.txt', 'w',encoding="utf-8") as f:
     f.write(filtered_content)
 
