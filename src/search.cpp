@@ -1,17 +1,27 @@
 #include <cstdio>
 #include <cstdlib>
+#include <chrono>
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
+#include <algorithm>
 #include <faiss/IndexFlat.h>
+#include <faiss/impl/AuxIndexStructures.h>
+
 #include <vec_tools.h>
-//search database_path k_neighbors query_path
+//search database_path query_path
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
 
 
-int main(int argc, char* args[]) {
+bool compare(const int &a, const int &b, float *distances) {
+  return distances[a] > distances[b];
+}
 
+
+
+int main(int argc, char* args[]) {
+    auto start = std::chrono::high_resolution_clock::now();
 
     int d;     // dimension
     int nb;    // database size
@@ -28,8 +38,8 @@ int main(int argc, char* args[]) {
     int d_q;
     float* queries;
     //if input path is defined
-    if(argc==4){
-        float* queries =  vectools::read_vectors(args[3], &d_q, &nq);
+    if(argc==3){
+        float* queries =  vectools::read_vectors(args[2], &d_q, &nq);
         if(queries==NULL)
             return 1;
 
@@ -40,8 +50,8 @@ int main(int argc, char* args[]) {
 
     }else{
         setmode(fileno(stdin), O_BINARY);
+
         //check error for differing dimensions
-        
         std::cin.read((char*) &d_q, sizeof(int));
         if(d_q!=d){
             std::cerr << "Query vectors and Database vectors different dimensions " <<d<<" != "<<d_q<< std::endl;
@@ -66,25 +76,32 @@ int main(int argc, char* args[]) {
     faiss::IndexFlatIP index(d); // call constructor
     index.add(nb, database); // add vectors to the index
 
-    int k = std::stoi(args[2]);
-
 
     { // search queries
 
-        idx_t* I = new idx_t[k * nq]; //indexs
-        float* D = new float[k * nq]; //distances
-
-
-        idx_t* I_1 = new idx_t[1]; //indexs
-        float* D_1 = new float[1]; 
+        faiss::RangeSearchResult result(nq);
+        float range_val=0.0;
+        index.range_search(nq, queries,range_val, &result);
+        
         
 
+        idx_t* I=result.labels;
+        float* D=result.distances;
+        
+        int k=result.lims[1];
+        
+        //sort indexes based on float array
+        std::sort(I, I + k,[&](const int &a, const int &b) {
+            return compare(a, b, D);
+        });
 
-        index.search(nq, queries, k, D, I);
-        int keep_indexes=0;
-        float prev=0.0;
-
+        //sort distances
+        std::sort(D, D + k, std::greater<float>());
+        
+        
         //find elbow
+        float prev=0.0;
+        int keep_indexes=0;
         for(int i=1;i<k;i++){
             if((D[i-1]-D[i])>=prev){
                 keep_indexes++;
@@ -94,31 +111,33 @@ int main(int argc, char* args[]) {
                 break;
             }
         }
-
-        std::cout<<keep_indexes<<"\n";
-
+        
+        std::cout<<keep_indexes<<std::endl;
         // print results
         file.open("data/urls.bin",std::ios::binary);
         char* url= new char[d];
         for(int i=0;i<keep_indexes;i++){
             file.seekg(d* I[i], std::ios_base::beg);
             file.read(url,d);
-            std::cout<<url<<"\n";
+            std::cout<<url<<std::endl;
         }
         file.close();
 
         for(int i=0;i<keep_indexes;i++){
-            printf("%f ", D[i]);
-            std::cout<<"\n";
+            printf("%f\n", D[i]);
+            fflush(stdout);
         }
 
         delete[] url;
-        delete[] I;
-        delete[] D;
     }
 
     delete[] database;
     delete[] queries;
 
+    
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //time
+    std::cout <<std::fixed<< "Time taken by function: "<< duration.count()*0.000001 << " seconds" << std::endl;
     return 0;
 }
