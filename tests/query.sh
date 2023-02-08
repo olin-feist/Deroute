@@ -9,4 +9,4 @@ bin/embed.exe $model data/query.bin < tests/query_plain.txt
 echo -e "\033[32m- Embedded:\033[0m" query_plain.txt
 echo
 echo -e "\033[32mSearch Query:\033[0m" "$OUTPUT"
-bin/search.exe data/vectors.bin 10 < data/query.bin
+bin/search.exe data/vectors.bin < data/query.bin

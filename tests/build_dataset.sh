@@ -1,10 +1,13 @@
+filename=${PWD}/$1
+
+
 cd "../"
 rm data/vectors.bin
 echo -e "\033[31m- Deleted vectors.bin\033[0m"
 rm data/urls.bin
 echo -e "\033[31m- Deleted urls.bin\033[0m"
 
-filename=$1
+
 model=bin/model.en.bin
 
 # Count the number of lines in the file
