@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cstdlib>
-#include <chrono>
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
@@ -21,7 +20,6 @@ bool compare(const int &a, const int &b, float *distances) {
 
 
 int main(int argc, char* args[]) {
-    auto start = std::chrono::high_resolution_clock::now();
 
     int d;     // dimension
     int nb;    // database size
@@ -135,9 +133,5 @@ int main(int argc, char* args[]) {
     delete[] queries;
 
     
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    //time
-    std::cout <<std::fixed<< "Time taken by function: "<< duration.count()*0.000001 << " seconds" << std::endl;
     return 0;
 }
