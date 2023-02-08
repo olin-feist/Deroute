@@ -3,11 +3,11 @@ This branch contains the search tools used by the Deroute extension.
 ### Search:
 The search tool will find the nearest neighbors of given database of dense vectors.
 ``` shell
-search database_path k_neighbors *query_path
+search database_path *query_path
 ```
 - `database_path` path to binary file of dense vectors to be searched <br>
 - `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
-- `k_neighbors` number of neighbors to be returned<br>
+
 ### Embed:
 The embed tool will take a single line of plain text from stdin and return a dense vector representation of it in the form of a binary file.
 ``` shell
