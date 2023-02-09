@@ -3,9 +3,10 @@ This branch contains the search tools used by the Deroute extension.
 ### Search:
 The search tool will find the nearest neighbors of given database of dense vectors.
 ``` shell
-search database_path *query_path
+search database_path index_path *query_path
 ```
 - `database_path` path to binary file of dense vectors to be searched <br>
+- `index_path` path to binary file of urls <br>
 - `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
 
 ### Embed:
@@ -26,9 +27,10 @@ lsh vectors_path
 ### Website Parser:
 The website parser will take a html file of a website and parse it down to its relevant content
 ``` shell
-python src/parse_website.py url
+python src/parse_website.py output_path url
 ```
 - `url` url of website to be parsed<br>
+- `output_path` path to where binary file of urls will be written <br>
 # Binary Data format
 All binary data sent and recieved from Deroute tools will be in the following format <br>
 ```
