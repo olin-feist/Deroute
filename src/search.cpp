@@ -8,7 +8,7 @@
 #include <faiss/impl/AuxIndexStructures.h>
 
 #include <vec_tools.h>
-//search database_path query_path
+//search database_path urls_path query_path
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
 
@@ -36,8 +36,8 @@ int main(int argc, char* args[]) {
     int d_q;
     float* queries;
     //if input path is defined
-    if(argc==3){
-        float* queries =  vectools::read_vectors(args[2], &d_q, &nq);
+    if(argc==4){
+        float* queries =  vectools::read_vectors(args[3], &d_q, &nq);
         if(queries==NULL)
             return 1;
 
@@ -112,11 +112,16 @@ int main(int argc, char* args[]) {
         
         std::cout<<keep_indexes<<std::endl;
         // print results
-        file.open("data/urls.bin",std::ios::binary);
-        char* url= new char[d];
+        file.open(args[2],std::ios::binary);
+        if(!file) {
+            std::cerr << "Cannot open file!" << std::endl;
+            return 1;
+        } 
+        
+        char* url= new char[300];
         for(int i=0;i<keep_indexes;i++){
-            file.seekg(d* I[i], std::ios_base::beg);
-            file.read(url,d);
+            file.seekg(300* I[i], std::ios_base::beg);
+            file.read(url,300);
             std::cout<<url<<std::endl;
         }
         file.close();

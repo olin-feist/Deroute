@@ -9,6 +9,7 @@ echo -e "\033[31m- Deleted urls.bin\033[0m"
 
 
 model=bin/model.en.bin
+urls_b=data/urls.bin
 
 # Count the number of lines in the file
 lines=$(wc -l < $filename)
@@ -18,7 +19,7 @@ i=0
 while read -r line; do
 
   # Embed urls
-  python src/parse_website.py "$line"
+  python src/parse_website.py $urls_b "$line"
   bin/embed.exe  $model data/vectors.bin < data/website_plain.txt
 
   i=$((i+1))

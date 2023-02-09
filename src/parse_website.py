@@ -6,6 +6,9 @@ import os.path
 #import num2words
 import justext
 
+#arg[1] where to write urls
+#arg[2] url
+
 #verify input url is a url
 def verify_url(url):
     regex = re.compile(
@@ -41,12 +44,12 @@ def check_dup(path,url):
     return True
 
 
-urls_file_path="data/urls.bin"
+
 binary_buffer_size=300
 
 
 #cmd line args
-url = sys.argv[1]
+url = sys.argv[2]
 url = url.strip()
 
 #check valid url
@@ -61,8 +64,9 @@ if(not html.ok):
     print("Error: Response Code",html.status_code)
     exit(1)
 
-#if debug mode is on
-if(len(sys.argv)==2):
+#if debug mode is off
+if(len(sys.argv)==3):
+    urls_file_path=sys.argv[1]
     if(check_dup(urls_file_path,url)):
         with open(urls_file_path, "ab") as url_bin:
             url= url + "\0" * (binary_buffer_size - len(url))
