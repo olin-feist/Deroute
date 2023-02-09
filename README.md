@@ -6,7 +6,7 @@ The search tool will find the nearest neighbors of given database of dense vecto
 search database_path label_path *query_path
 ```
 - `database_path` path to binary file of dense vectors to be searched <br>
-- `index_path` path to binary file of urls <br>
+- `label_path` path to binary file of urls <br>
 - `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
 
 ### Embed:
