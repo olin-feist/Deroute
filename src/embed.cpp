@@ -126,8 +126,8 @@ int storeVector(std::string path, Vector vec){
         }
 
         std::string str; 
-        FastText fasttext;
-        int dimension=300;
+        
+        int dimension=vec.size();
         write_f.write((char*) &dimension, sizeof(int));
 
         int elements=1;
