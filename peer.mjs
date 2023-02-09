@@ -38,7 +38,7 @@ swarm.on('connection', conn => {
 })
 
 // Join a common topic
-const topic = process.argv[2] ? b4a.from(process.argv[2], 'hex') : crypto.randomBytes(32)
+const topic = b4a.from('e3cd816e9dd448a50ec7f89865e5399fadb7d41657baf9dac2c29c9cf734c790', 'hex')
 const discovery = swarm.join(topic, { client: true, server: true })
 
 // The flushed promise will resolve when the topic has been fully announced to the DHT
@@ -46,13 +46,8 @@ discovery.flushed().then(() => {
   console.log('joined topic:', b4a.toString(topic, 'hex'))
 })
 
-// Broadcast stdin to all connections
-process.stdin.on('data', data => {
-  derouteSearch(0.9, data)
-})
-
 //Send search query
-export function derouteSearch(distance_score, vector) {
+export function sendSearch(distance_score, vector) {
   let query = buildSearchPayload(distance_score, `${vector}`)
   sendToPeers(query)
 }
@@ -115,5 +110,4 @@ const debug = (msg) => {
     return
   }
   console.log(msg)
-
 }
