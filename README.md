@@ -3,7 +3,7 @@ This branch contains the search tools used by the Deroute extension.
 ### Search:
 The search tool will find the nearest neighbors of given database of dense vectors.
 ``` shell
-search database_path index_path *query_path
+search database_path label_path *query_path
 ```
 - `database_path` path to binary file of dense vectors to be searched <br>
 - `index_path` path to binary file of urls <br>
