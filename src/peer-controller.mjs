@@ -8,7 +8,7 @@ export function search(distance_score, vector){
 //SWARM -> SS -> SWARM
 export function proccessSearch(distance_score, vector){
     //TODO: Send to controller -> SS
-    return ["TEST"]
+    return ["google.com", "bing.com"]
 }
 
 //SWARM -> BE

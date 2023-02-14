@@ -102,7 +102,14 @@ const processPayload = (data) => {
   }
 }
 
-const debug_mode = false;
+//process args
+let debug_mode = false;
+process.argv.forEach(element => {
+  if (element == '-d'){
+    debug_mode = true;
+  }
+});
+
 
 //enable debug mode for message prints ;)
 const debug = (msg) => {
