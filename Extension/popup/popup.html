@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Chrome Native Messaging Example</title>
+    <title>deroute extension</title>
 
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <p>
-        <button id="reconnect">(Re)Connect</button>
-        <button id="disconnect">Disconnect</button>
+        <button id="ping">Ping</button>
     </p>
 
     <hr>
 
     <p>
         Examples:
-        <button data-example="ping">Ping</button>
         <button data-example="url">url</button>
         <button data-example="query">query</button>
     </p>
 
-    <p><textarea id="msg" rows="4" cols="40">{"ping":"pong"}</textarea></p>
+    <p><textarea id="msg" rows="4" cols="40"></textarea></p>
 
-    <p><button id="send">Send</button></p>
+    <p><button id="postUrl">Serve Url</button></p>
+    <p><button id="getQuery">Query Swarm</button></p>
 
     <hr>
 

@@ -1,32 +1,32 @@
-var nativeMessage = require('chrome-native-messaging');
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const port = 59361;
+app.use(express.json());
+app.use(cors());
 
-var input = new nativeMessage.Input();
-var transform = new nativeMessage.Transform(messageHandler);
-var output = new nativeMessage.Output();
+app.get('/ping', (req, res) => {
+    res.json(req.body)
+});
 
-process.stdin
-    .pipe(input)
-    .pipe(transform)
-    .pipe(output)
-    .pipe(process.stdout)
-;
-
-function messageHandler(msg, push, done) {
-    if (msg.url) {
-        //give to fastText
-        push(msg);
-        done();
-    }else if (msg.query) {
-        //give to swarm
-        push(msg);
-        done();
-    } else {
-        // Just echo the message:
-        push(msg);
-        done();
+app.post('/query', (req, res) => {
+    if (req.body) {
+        console.log(req.body);
     }
-}
+    res.json(req.body)
+});
 
-function receiveSwarmResponse(response) {
-    //give to extension
-}
+app.post('/url', (req, res) => {
+    if (req.body) {
+        console.log(req.body);
+    }
+    res.json(req.body)
+});
+
+app.listen(port, (error) => {
+    if (!error) {
+        console.log(`Example app listening on port ${port}`)
+    } else {
+        console.log("Error occured launching server: " + port);
+    }
+});
