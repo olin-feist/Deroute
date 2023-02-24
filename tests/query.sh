@@ -3,7 +3,7 @@ rm data/query.bin
 echo -e "\033[31m- Deleted query.bin\033[0m"
 
 OUTPUT=$(cat tests/query_plain.txt)
-model=bin/model.en.bin
+model=bin/model.q.ftz
 urls_b=data/urls.bin
 database=data/vectors.bin
 

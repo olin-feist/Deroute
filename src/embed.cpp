@@ -60,30 +60,6 @@ std::string pre_process(std::string sentence){
 }
 
 
-
-//get sentence vectors
-Vector getVector(std::string model_path){
-    FastText fasttext;
-    fasttext.loadModel(model_path); //load model
-
-    Vector svec(fasttext.getDimension());
-
-    std::stringstream input_stream;
-    input_stream << std::cin.rdbuf();
-    std::string sentence = input_stream.str();
-
-    sentence=pre_process(sentence);
-    
-    std::stringstream fstring_string(sentence);
-    fasttext.getSentenceVector(fstring_string, svec); // compute first sentence vector
-    
-    float norm  = svec.norm();
-    if (norm > 0) {
-        svec.mul(1.0 / norm);
-    }
-    return svec;
-}
-
 //add vector to binary file
 int storeVector(std::string path, Vector vec){
 
@@ -145,29 +121,67 @@ int storeVector(std::string path, Vector vec){
 }
 
 
+//get sentence vectors
+void getVector(std::string model_path,std::string output){
+    FastText fasttext;
+    fasttext.loadModel(model_path); //load model
+
+    Vector svec(fasttext.getDimension());
+   
+    //get sentences
+    while (std::cin.peek() != EOF) {
+        
+        std::string sentence;
+        std::getline(std::cin, sentence);
+        
+        sentence=pre_process(sentence);
+    
+        std::stringstream fstring_string(sentence);
+        fasttext.getSentenceVector(fstring_string, svec); // compute first sentence vector
+        
+        //normalize
+        float norm  = svec.norm();
+        if (norm > 0) {
+            svec.mul(1.0 / norm);
+        }
+        
+        //if output path specified
+        if(!output.empty()){
+            storeVector(output,svec);
+            std::cout<<"Done"<<std::endl;
+        //write to stdout
+        }else{
+            setmode(fileno(stdout), O_BINARY);
+            int dimensions=svec.size();
+            int n=1;
+            std::cout.write((char*) &dimensions, sizeof(int));
+            std::cout.write((char*) &n, sizeof(int));
+            for(int i=0;i<dimensions;i++){
+                std::cout.write((char*) &svec[i], sizeof(float));
+            }
+        }
+
+    }
+
+}
+
+
 int main(int argc, char* argv[]){
+    
     if(argc>3){
         std::cerr<< "Invalid Number of Args" << std::endl;
         std::cerr<< "usage: embed <model_path> <optional_output_path>" << std::endl;
         return 1;
     }
-
-    //get sentence vector
-    Vector svec=getVector(argv[1]);
+    
     //if output path specified
     if(argc==3){
-        storeVector(argv[2],svec);
+        getVector(argv[1],argv[2]);
 
     //write to stdout
     }else{
-        setmode(fileno(stdout), O_BINARY);
-        int dimensions=svec.size();
-        int n=1;
-        std::cout.write((char*) &dimensions, sizeof(int));
-        std::cout.write((char*) &n, sizeof(int));
-        for(int i=0;i<dimensions;i++){
-             std::cout.write((char*) &svec[i], sizeof(float));
-        }
+        getVector(argv[1],"");
     }
+    
     return 0;
 }
