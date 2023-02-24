@@ -10,7 +10,7 @@ search database_path label_path *query_path
 - `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
 
 ### Embed:
-The embed tool will take a single line of plain text from stdin and return a dense vector representation of it in the form of a binary file.
+The embed tool will continuously read lines from stdin and return a dense vector representation for each line of text, in the form of a binary file.
 ``` shell
 embed model_path *output_path
 ```
@@ -25,12 +25,13 @@ lsh vectors_path
 - `vectors_path` path to binary file of dense vectors to be hashed <br>
 
 ### Website Parser:
-The website parser will take a html file of a website and parse it down to its relevant content
+The website parser will take a url for a website and parse it down to its relevant content
 ``` shell
-python src/parse_website.py output_path url
+python src/parse_website.py -output -url -debug
 ```
 - `url` url of website to be parsed<br>
-- `output_path` path to where binary file of urls will be written <br>
+- `output` location where URL labels will be written to <br>
+- `*debug` optional option that if set will ignore duplicate url, cant be used with `output` <br>
 # Binary Data format
 All binary data sent and recieved from Deroute tools will be in the following format <br>
 ```
