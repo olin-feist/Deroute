@@ -1,13 +1,13 @@
 from bs4 import BeautifulSoup
 import re
 import requests
-import sys
 import os.path
 #import num2words
 import justext
+import argparse
 
-#arg[1] where to write urls
-#arg[2] url
+
+
 
 #verify input url is a url
 def verify_url(url):
@@ -35,7 +35,7 @@ def check_dup(path,url):
         while(url_b):
             
             url_s=url_b.decode("utf-8").strip().replace("\0", "")
-            
+
             if(url_s==url):
                 return False
 
@@ -44,12 +44,21 @@ def check_dup(path,url):
     return True
 
 
+parser = argparse.ArgumentParser(prog = 'Website Parser')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-debug', '--debug', action='store_true', required=False)
+group.add_argument('-output', '--output', required=False)
+
+parser.add_argument('-url' ,'--url',required=True) 
+
+args = parser.parse_args()
+
 
 binary_buffer_size=300
 
 
 #cmd line args
-url = sys.argv[2]
+url = args.url
 url = url.strip()
 
 #check valid url
@@ -65,8 +74,8 @@ if(not html.ok):
     exit(1)
 
 #if debug mode is off
-if(len(sys.argv)==3):
-    urls_file_path=sys.argv[1]
+if(not args.debug):
+    urls_file_path=args.output
     if(check_dup(urls_file_path,url)):
         with open(urls_file_path, "ab") as url_bin:
             url= url + "\0" * (binary_buffer_size - len(url))
@@ -98,6 +107,8 @@ for paragraph in paragraphs:
     if(not paragraph.is_boilerplate):
         filtered_content+=paragraph.text
         filtered_content+='\n'
+        
+filtered_content = filtered_content.replace("\n", "")
 
 #pre-proccess data for fastText (off for now)
 

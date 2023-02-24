@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
+#include <map>
 #include <algorithm>
 #include <faiss/IndexFlat.h>
 #include <faiss/impl/AuxIndexStructures.h>
@@ -11,12 +12,6 @@
 //search database_path urls_path query_path
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
-
-
-bool compare(const int &a, const int &b, float *distances) {
-  return distances[a] > distances[b];
-}
-
 
 
 int main(int argc, char* args[]) {
@@ -83,29 +78,27 @@ int main(int argc, char* args[]) {
         
         
 
-        idx_t* I=result.labels;
-        float* D=result.distances;
+        idx_t* I=result.labels; //indexs
+        float* D=result.distances; //distances
         
-        int k=result.lims[1];
-        
-        //sort indexes based on float array
-        std::sort(I, I + k,[&](const int &a, const int &b) {
-            return compare(a, b, D);
-        });
+        int k=result.lims[1]; // k
+        std::vector<std::pair<float,idx_t>> search_results; //put results into a pair
 
-        //sort distances
-        std::sort(D, D + k, std::greater<float>());
+        for(int i=0;i<k;i++)
+            search_results.push_back(std::pair<float, idx_t>(D[i],I[i]));
         
+        std::sort(search_results.begin(), search_results.end(),std::greater<>()); //sort
+
         
         //find elbow
         float prev=0.0;
         int keep_indexes=0;
-        for(int i=1;i<k;i++){
-            if((D[i-1]-D[i])>=prev){
+        for (int i=1;i<k;i++){          
+            float difference=(search_results[i-1].first)-(search_results[i].first);
+            if(difference>=prev){
                 keep_indexes++;
-                prev=D[i-1]-D[i];
+                prev=difference;
             }else{
-                keep_indexes++; //inculsive (works in some cases)
                 break;
             }
         }
@@ -120,14 +113,14 @@ int main(int argc, char* args[]) {
         
         char* url= new char[300];
         for(int i=0;i<keep_indexes;i++){
-            file.seekg(300* I[i], std::ios_base::beg);
+            file.seekg(300* search_results[i].second, std::ios_base::beg);
             file.read(url,300);
             std::cout<<url<<std::endl;
         }
         file.close();
 
         for(int i=0;i<keep_indexes;i++){
-            printf("%f\n", D[i]);
+            printf("%f\n", search_results[i].first);
             fflush(stdout);
         }
 

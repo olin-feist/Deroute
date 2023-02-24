@@ -1,43 +1,89 @@
-var exec = require('child_process').exec;
+const { spawn } = require('child_process');
 
-var embed_cmd = '..\\bin\\embed.exe ..\\bin\\model.en.bin'; //generate dense vector command
-var buffer;
+//embed commands
+const embed_cmd = '../bin/embed.exe';
+const embed_args = ['../bin/model.q.ftz'];
 
-//embedding command config
-var embed_p=exec(embed_cmd, {encoding: 'binary', maxBuffer: 1208}, function(error,stdout) {
-  if (error) {
-    console.error(error);
-    return;
-  }
+//search command
+const search_cmd = '../bin/search.exe';
+const search_args = ['../data/vectors.bin','../data/urls.bin'];
 
-  buffer = Buffer.from(stdout, 'binary');
-  exec_search(buffer);
-});
-
-//search query
-embed_p.stdin.write("similarity search vector");
-embed_p.stdin.end();
+const embed_process = spawn(embed_cmd, embed_args);
 
 
-//call search.exe
-function exec_search(buffer) {
-  var search_cmd = '..\\bin\\search.exe ..\\data\\vectors.bin ..\\data\\urls.bin' ;//command to search for 5 nearest neighbors
+// call embed.exe to embed query
+function embed_query(input) {
+  return new Promise((resolve, reject) => {
 
-  //search command config
-  var search_p=exec(search_cmd, {encoding: 'binary', maxBuffer: 10000}, function(error, stdout) {
+    embed_process.stdin.write(input);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+    embed_process.stdout.once('data', (data) => {
+      resolve(data);
+    });
 
-    if (stdout) {
-      console.log(stdout);
-    }
+    
+    embed_process.stdin.on('error', (err) => {
+      reject(err);
+    });
+
+    embed_process.stdout.on('error', (err) => {
+      reject(err);
+    });
 
   });
-
-  //feed buffer
-  search_p.stdin.write(buffer);
-  search_p.stdin.end();
 }
+
+// call search.exe to search query
+function search(buffer) {
+  search_process = spawn(search_cmd, search_args);
+
+  return new Promise((resolve, reject) => {
+    let output = "";
+
+    search_process.stdin.write(buffer);
+
+    search_process.stdout.on('data', (data) => {
+      output += data.toString('utf8');
+    });
+
+    search_process.stdout.on('end', () => {
+      resolve(output);
+    });
+
+    search_process.stdin.on('error', (err) => {
+      reject(err);
+    });
+
+    search_process.stdout.on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
+// Example usage
+async function run() {
+
+  
+
+  //embed query1
+  const output1 = await embed_query('similarity search vector\n');
+
+  //search query 1
+  const query1 = await search(output1);
+  console.log(query1);
+  search_process.stdin.end(); //end search
+
+
+  //embed query2
+  const output2 = await embed_query('ravenna bridge\n');
+
+  //search query 2
+  const query2 = await search(output2);
+  console.log(query2);
+  search_process.stdin.end(); //end search
+
+  
+  embed_process.stdin.end(); //end embeddings
+}
+
+run();
