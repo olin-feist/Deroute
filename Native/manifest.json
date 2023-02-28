@@ -1,9 +1,4 @@
 {
-    "name": "deroute_controller",
-    "description": "Test Chrome native messaging",
-    "path": "hostMsgReceive.bat",
-    "type": "stdio",
-    "allowed_origins": [
-      "chrome-extension://cppmendngpjebhcejjiigecmnknlpojb/"
-    ]
-  }
+  "name": "deroute_controller",
+  "description": "Deroute localhost connection point"
+}

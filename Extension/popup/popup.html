@@ -8,27 +8,17 @@
 <body>
     <p>
         <button id="ping">Ping</button>
+        <div id="isConnected"></div>
     </p>
 
     <hr>
 
-    <p>
-        Examples:
-        <button data-example="url">url</button>
-        <button data-example="query">query</button>
-    </p>
-
-    <p><textarea id="msg" rows="4" cols="40"></textarea></p>
-
-    <p><button id="postUrl">Serve Url</button></p>
-    <p><button id="getQuery">Query Swarm</button></p>
+    <div id="sentUrl"></div>
 
     <hr>
-
-    <p><button id="clear">Clear</button></p>
 
     <div id="log"></div>
 
-    <script src="popup.js"></script>
+    <script type="module" src="popup.js"></script>
 </body>
 </html>
