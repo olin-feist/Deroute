@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Deroute",
+    "version": "1.0",
+    "host_permissions": [
+        "https://duckduckgo.com/?=*&*",
+        "https://www.google.com/search?q=*&*"
+    ],
+    "permissions": [
+        "webRequest",
+        "history",
+        "storage"
+    ],
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    }
+}
