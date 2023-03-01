@@ -36,7 +36,7 @@ app.post('/url', (req, res) => {
         console.log(req.body);
     }
     res.json({
-        status: "Success",
+        status: "success",
         url: req.body.url
     })
 });
