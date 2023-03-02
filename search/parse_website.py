@@ -4,10 +4,9 @@ import requests
 import os.path
 #import num2words
 import justext
-import argparse
 
 
-
+binary_buffer_size=300
 
 #verify input url is a url
 def verify_url(url):
@@ -44,79 +43,66 @@ def check_dup(path,url):
     return True
 
 
-parser = argparse.ArgumentParser(prog = 'Website Parser')
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-debug', '--debug', action='store_true', required=False)
-group.add_argument('-output', '--output', required=False)
+def parse_website(url,url_path,debug):
+    url = url.strip()
 
-parser.add_argument('-url' ,'--url',required=True) 
+    #check valid url
+    if(not verify_url(url)):
+        print("Error: "+url+" is not a valid URL")
+        return -1
 
-args = parser.parse_args()
+    html = requests.get(url) #get website
 
+    #check response
+    if(not html.ok):
+        print("Error: Response Code",html.status_code)
+        return -1
 
-binary_buffer_size=300
-
-
-#cmd line args
-url = args.url
-url = url.strip()
-
-#check valid url
-if(not verify_url(url)):
-    print("Error: "+url+" is not a valid URL")
-    exit(1)
-
-html = requests.get(url) #get website
-
-#check response
-if(not html.ok):
-    print("Error: Response Code",html.status_code)
-    exit(1)
-
-#if debug mode is off
-if(not args.debug):
-    urls_file_path=args.output
-    if(check_dup(urls_file_path,url)):
-        with open(urls_file_path, "ab") as url_bin:
-            url= url + "\0" * (binary_buffer_size - len(url))
-            url_bin.write(bytes(url, encoding="utf-8"))
-    else:
-        print("Error: Duplicate Entry")
-        exit(1)
+    #if debug mode is off
+    if(not debug):
+        urls_file_path=url_path
+        if(check_dup(urls_file_path,url)):
+            with open(urls_file_path, "ab") as url_bin:
+                url= url + "\0" * (binary_buffer_size - len(url))
+                url_bin.write(bytes(url, encoding="utf-8"))
+        else:
+            print("Error: Duplicate Entry")
+            return -1
 
 
-#html parsing
-soup = BeautifulSoup(html.content, 'html.parser')
+    #html parsing
+    soup = BeautifulSoup(html.content, 'html.parser')
 
-# Find the element in the HTML
-header = soup.find('header')
-head = soup.find('head')
-# Remove the element from the HTML
-if header:
-    header.decompose()
-if head:
-    head.decompose()
-    
-updated_html = soup.encode("utf-8") #html after removing elements
-
-#filter for content
-paragraphs = justext.justext(updated_html, justext.get_stoplist("English"),70,140,0.2,0.3,0.43, 150, True, None, 'utf8', 'replace')
-
-filtered_content=""
-for paragraph in paragraphs:
-    if(not paragraph.is_boilerplate):
-        filtered_content+=paragraph.text
-        filtered_content+='\n'
+    # Find the element in the HTML
+    header = soup.find('header')
+    head = soup.find('head')
+    # Remove the element from the HTML
+    if header:
+        header.decompose()
+    if head:
+        head.decompose()
         
-filtered_content = filtered_content.replace("\n", "")
+    updated_html = soup.encode("utf-8") #html after removing elements
 
-#pre-proccess data for fastText (off for now)
+    #filter for content
+    paragraphs = justext.justext(updated_html, justext.get_stoplist("English"),70,140,0.2,0.3,0.43, 150, True, None, 'utf8', 'replace')
 
-#filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0))), filtered_content) #convert numbers to words
+    filtered_content=""
+    for paragraph in paragraphs:
+        if(not paragraph.is_boilerplate):
+            filtered_content+=paragraph.text
+            filtered_content+='\n'
+            
+    filtered_content = filtered_content.replace("\n", "")
 
-#save content
-with open('data/website_plain.txt', 'w',encoding="utf-8") as f:
-    f.write(filtered_content)
+    #pre-proccess data for fastText (off for now)
+    #filtered_content = re.sub(r"(\d+)", lambda x: num2words.num2words(int(x.group(0))), filtered_content) #convert numbers to words
+
+    #save content
+    with open('data/website_plain.txt', 'w',encoding="utf-8") as f:
+        f.write(filtered_content)
+
+    return filtered_content
 
 
 
