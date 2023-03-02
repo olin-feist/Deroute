@@ -14,64 +14,38 @@
 using idx_t = faiss::Index::idx_t;
 
 
-int main(int argc, char* args[]) {
+struct search_ret {
+    int k;
+    float* distances;
+    char* urls;
+};
+
+
+extern "C"
+search_ret* search(char* database_path, char* labels_path, float* queries){
 
     int d;     // dimension
     int nb;    // database size
-    int nq;    // number of queries
+    int nq=1;    // number of queries
     
     std::ifstream file;
 
     //---------------------------- database file ----------------------------
- 
-    float* database =  vectools::read_vectors(args[1], &d, &nb);
+    float* database =  vectools::read_vectors(database_path, &d, &nb);
     if(database==NULL)
-        return 1;
-    //---------------------------- query file ----------------------------
-    int d_q;
-    float* queries;
-    //if input path is defined
-    if(argc==4){
-        float* queries =  vectools::read_vectors(args[3], &d_q, &nq);
-        if(queries==NULL)
-            return 1;
-
-        if(d_q!=d){
-            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<" != "<<d_q<< std::endl;
-            return 1;
-        }
-
-    }else{
-        setmode(fileno(stdin), O_BINARY);
-
-        //check error for differing dimensions
-        std::cin.read((char*) &d_q, sizeof(int));
-        if(d_q!=d){
-            std::cerr << "Query vectors and Database vectors different dimensions " <<d<<" != "<<d_q<< std::endl;
-            return 1;
-        }
-
-        std::cin.read((char*) &nq, sizeof(int)); // number of queries
-
-        queries = new float[d * nq];
-
-        //get queries
-        for(int i=0;i<nq;i++){
-            std::cin.read((char*) &queries[d*i], sizeof(float)*d);
-            
-        }
-    }   
-    
-    //-------------------------------------------------------------------
+        exit(1);
+    //-----------------------------------------------------------------------
 
 
-    
+
     faiss::IndexFlatIP index(d); // call constructor
     index.add(nb, database); // add vectors to the index
 
 
-    { // search queries
+    search_ret* ret = new search_ret;
 
+    { // search queries
+        
         faiss::RangeSearchResult result(nq);
         float range_val=0.0;
         index.range_search(nq, queries,range_val, &result);
@@ -82,10 +56,14 @@ int main(int argc, char* args[]) {
         float* D=result.distances; //distances
         
         int k=result.lims[1]; // k
-        std::vector<std::pair<float,idx_t>> search_results; //put results into a pair
 
-        for(int i=0;i<k;i++)
+        
+        
+        std::vector<std::pair<float,idx_t>> search_results; //put results into a pair
+        
+        for(int i=0;i<k;i++){
             search_results.push_back(std::pair<float, idx_t>(D[i],I[i]));
+        }
         
         std::sort(search_results.begin(), search_results.end(),std::greater<>()); //sort
 
@@ -102,34 +80,48 @@ int main(int argc, char* args[]) {
                 break;
             }
         }
+
         
-        std::cout<<keep_indexes<<std::endl;
+        ret->k=keep_indexes;
         // print results
-        file.open(args[2],std::ios::binary);
+        file.open(labels_path,std::ios::binary);
         if(!file) {
             std::cerr << "Cannot open file!" << std::endl;
-            return 1;
+            exit(1);
         } 
-        
+        ret->urls=(char*) malloc(k*300);
+
         char* url= new char[300];
         for(int i=0;i<keep_indexes;i++){
             file.seekg(300* search_results[i].second, std::ios_base::beg);
             file.read(url,300);
-            std::cout<<url<<std::endl;
+            memcpy(&(ret->urls[i*300]),url,300);
         }
         file.close();
-
+        ret->distances=(float*) malloc(k*sizeof(float));
         for(int i=0;i<keep_indexes;i++){
-            printf("%f\n", search_results[i].first);
-            fflush(stdout);
+            ret->distances[i]=search_results[i].first;
         }
-
+        
         delete[] url;
     }
 
     delete[] database;
     delete[] queries;
+    
+    return ret;
 
     
-    return 0;
+    
+}
+
+
+extern "C"
+void free_mem(void* ptr){
+    free(ptr);
+}
+
+extern "C"
+void delete_struct(search_ret* ptr){
+    delete[] ptr;
 }
