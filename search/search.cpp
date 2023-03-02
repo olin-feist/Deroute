@@ -24,18 +24,18 @@ struct search_ret {
 extern "C"
 search_ret* search(char* database_path, char* labels_path, float* queries){
 
+    
     int d;     // dimension
     int nb;    // database size
     int nq=1;    // number of queries
     
     std::ifstream file;
-
+    
     //---------------------------- database file ----------------------------
     float* database =  vectools::read_vectors(database_path, &d, &nb);
     if(database==NULL)
         exit(1);
     //-----------------------------------------------------------------------
-
 
 
     faiss::IndexFlatIP index(d); // call constructor
@@ -66,7 +66,7 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         }
         
         std::sort(search_results.begin(), search_results.end(),std::greater<>()); //sort
-
+        
         
         //find elbow
         float prev=0.0;
@@ -85,12 +85,13 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         ret->k=keep_indexes;
         // print results
         file.open(labels_path,std::ios::binary);
+        
         if(!file) {
             std::cerr << "Cannot open file!" << std::endl;
             exit(1);
         } 
         ret->urls=(char*) malloc(k*300);
-
+        
         char* url= new char[300];
         for(int i=0;i<keep_indexes;i++){
             file.seekg(300* search_results[i].second, std::ios_base::beg);
@@ -104,11 +105,10 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         }
         
         delete[] url;
+        
     }
 
     delete[] database;
-    delete[] queries;
-    
     return ret;
 
     
