@@ -6,8 +6,14 @@
 #include <iostream>
 #include <regex>
 using namespace fasttext;
-//.\bin\embed.exe bin/wiki.en.bin data/website_plain.txt data/vectors.bin append
 
+
+FastText fastText;
+
+extern "C"
+void load_model(char* path){
+    fastText.loadModel(path);
+}
 
 std::string pre_process(std::string sentence){
 
@@ -122,66 +128,35 @@ int storeVector(std::string path, Vector vec){
 
 
 //get sentence vectors
-void getVector(std::string model_path,std::string output){
-    FastText fasttext;
-    fasttext.loadModel(model_path); //load model
-
-    Vector svec(fasttext.getDimension());
+extern "C"
+float* getVector(char* output, char* sentence){
+    int dimensions=fastText.getDimension();
+    Vector svec(dimensions);
    
-    //get sentences
-    while (std::cin.peek() != EOF) {
-        
-        std::string sentence;
-        std::getline(std::cin, sentence);
-        
-        sentence=pre_process(sentence);
+    std::string sentence_string(sentence);
+    sentence_string=pre_process(sentence_string);
+
+    std::stringstream fstring_string(sentence_string);
+    fastText.getSentenceVector(fstring_string, svec); // compute first sentence vector
     
-        std::stringstream fstring_string(sentence);
-        fasttext.getSentenceVector(fstring_string, svec); // compute first sentence vector
-        
-        //normalize
-        float norm  = svec.norm();
-        if (norm > 0) {
-            svec.mul(1.0 / norm);
-        }
-        
-        //if output path specified
-        if(!output.empty()){
-            storeVector(output,svec);
-            std::cout<<"Done"<<std::endl;
-        //write to stdout
-        }else{
-            setmode(fileno(stdout), O_BINARY);
-            int dimensions=svec.size();
-            int n=1;
-            std::cout.write((char*) &dimensions, sizeof(int));
-            std::cout.write((char*) &n, sizeof(int));
-            for(int i=0;i<dimensions;i++){
-                std::cout.write((char*) &svec[i], sizeof(float));
-            }
-        }
-
-    }
-
-}
-
-
-int main(int argc, char* argv[]){
-    
-    if(argc>3){
-        std::cerr<< "Invalid Number of Args" << std::endl;
-        std::cerr<< "usage: embed <model_path> <optional_output_path>" << std::endl;
-        return 1;
+    //normalize
+    float norm  = svec.norm();
+    if (norm > 0) {
+        svec.mul(1.0 / norm);
     }
     
     //if output path specified
-    if(argc==3){
-        getVector(argv[1],argv[2]);
-
+    if(output[0]!='\0'){
+        storeVector(output,svec);
+        return NULL;
     //write to stdout
     }else{
-        getVector(argv[1],"");
+        float* ret = (float*) malloc(dimensions*sizeof(float));
+        memcpy(ret, svec.data(), dimensions*sizeof(float));
+        return ret;
     }
-    
-    return 0;
+
 }
+
+
+
