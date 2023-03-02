@@ -15,6 +15,11 @@ void load_model(char* path){
     fastText.loadModel(path);
 }
 
+extern "C"
+int get_vector_size(){
+    return fastText.getDimension();
+}
+
 std::string pre_process(std::string sentence){
 
 
