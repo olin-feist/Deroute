@@ -20,8 +20,3 @@ add_library(embed SHARED  search/embed.cpp)
 set_target_properties( embed PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST_DIR/../../bin/)
 target_include_directories(embed PRIVATE "C:/Program Files (x86)/fasttext/include/fasttext")
 target_link_libraries(embed ${libfasttext})
-
-add_library(vectools SHARED  search/vec_tools.cpp)
-set_target_properties(vectools PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST_DIR/../../bin/)
-target_include_directories(vectools PRIVATE "C:/Program Files (x86)/fasttext/include/fasttext" "search/")
-target_link_libraries(vectools ${libfasttext})
