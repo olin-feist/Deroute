@@ -9,14 +9,21 @@ using namespace fasttext;
 
 
 FastText fastText;
+bool isFastTextInitialized = false;
 
 extern "C"
 void load_model(char* path){
     fastText.loadModel(path);
+    isFastTextInitialized=true;
 }
 
 extern "C"
 int get_vector_size(){
+    if(!isFastTextInitialized){
+        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
+        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
+        return -1;
+    }
     return fastText.getDimension();
 }
 
@@ -135,6 +142,11 @@ int storeVector(std::string path, Vector vec){
 //get sentence vectors
 extern "C"
 float* getVector(char* output, char* sentence){
+    if(!isFastTextInitialized){
+        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
+        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
+        return NULL;
+    }
     int dimensions=fastText.getDimension();
     Vector svec(dimensions);
    

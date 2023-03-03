@@ -13,12 +13,20 @@
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
 
-
-struct search_ret {
+struct search_ret { 
     int k;
     float* distances;
     char* urls;
 };
+
+
+faiss::IndexFlatIP search_index;
+
+
+extern "C"
+void update_index(float* vector){
+    search_index.add(1, vector);
+}
 
 
 extern "C"
@@ -38,8 +46,9 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
     //-----------------------------------------------------------------------
 
 
-    faiss::IndexFlatIP index(d); // call constructor
-    index.add(nb, database); // add vectors to the index
+    search_index= faiss::IndexFlatIP(d); // call constructor
+    search_index.add(nb, database); // add vectors to the index
+
 
 
     search_ret* ret = new search_ret;
@@ -48,7 +57,7 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         
         faiss::RangeSearchResult result(nq);
         float range_val=0.0;
-        index.range_search(nq, queries,range_val, &result);
+        search_index.range_search(nq, queries,range_val, &result);
         
         
 
@@ -115,12 +124,13 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
     
 }
 
-
+//for python wrappers to dealloc pointers
 extern "C"
 void free_mem(void* ptr){
     free(ptr);
 }
 
+//for python wrappers to dealloc return results
 extern "C"
 void delete_struct(search_ret* ptr){
     delete[] ptr;
