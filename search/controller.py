@@ -2,6 +2,7 @@ import ctypes
 import struct
 from flask import Flask, request, jsonify
 from parse_website import parse_website
+from threading import Lock
 
 #generate dense vector
 def embed(file_path,text):
@@ -28,6 +29,8 @@ class search_ret(ctypes.Structure):
         ("urls", ctypes.POINTER(ctypes.c_char)),
     ]
 
+
+mutex = Lock() #mutex lock for updating database
 
 # Load the required dependencies
 libstdc = ctypes.WinDLL('../bin/libstdc++-6.dll')
@@ -64,16 +67,20 @@ def embed_url():
     if(web_content==-1):
         return jsonify({'response': 'Error'})
     
-    embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+    #prevent multiple edits to database file
+    mutex.acquire()
+    try:
+        embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+    finally:
+        mutex.release()
 
     return jsonify({'response': 'Done'})
 
 #embed search query
 @app.route('/embedQuery', methods=['POST'])
-def embed_query():
+def embed_query():  
     data = request.get_json()
     query = data['query']
-    print(query)
     dense_vector=embed("",query.encode("utf-8"))
     
     buf = bytearray()
@@ -98,13 +105,14 @@ def search():
     results = search_local(vectors_path.encode("utf-8"),urls_path.encode("utf-8"),float_pointer)
     
     
-    ret ={}
+    ret =[]
+    
     k=results.contents.k
     for i in range(k):
-        key_u = f"url{i+1}"
-        key_d = f"dist{i+1}"
-        ret[key_u]=results.contents.urls[i*urls_size:(i+1)*urls_size].decode("utf-8").replace("\0", "")
-        ret[key_d]=results.contents.distances[i]
+        single_res={}
+        single_res["url"]=results.contents.urls[i*urls_size:(i+1)*urls_size].decode("utf-8").replace("\0", "")
+        single_res["dist"]=results.contents.distances[i]
+        ret.append(single_res)
 
 
     free_search_results(results) #free struct
@@ -112,7 +120,8 @@ def search():
     return jsonify(ret)
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5000)
+    from waitress import serve
+    serve(app, port=5000)
 
 
 
