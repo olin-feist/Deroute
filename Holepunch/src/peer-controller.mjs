@@ -1,14 +1,14 @@
-import { sendSearch as peer } from "./peer.mjs"
+import { sendSearch } from "./peer.mjs"
 
 //BE -> SS -> SWARM
 export function search(distance_score, vector){
-    peer(distance_score, vector)
+    sendSearch(distance_score, vector)
 }
 
 //SWARM -> SS -> SWARM
 export function proccessSearch(distance_score, vector){
     //TODO: Send to controller -> SS
-    return ["google.com", "bing.com"]
+    return ["www.w", "b.com"]
 }
 
 //SWARM -> BE

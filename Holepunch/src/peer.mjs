@@ -89,7 +89,6 @@ const processPayload = (data) => {
       }
 
       sendToPeers(buildResponsePayload(user, url_list))
-
       break;
     case payload_type.response:
       debug(`peer: ${`${data}`.slice(1, 65)}\nURL_LIST: ${`${data}`.slice(65, 83)}\n`)
