@@ -32,6 +32,8 @@ swarm.on('connection', conn => {
     //check to see if we have gotten data b4
     if (prev_searches.contains(`${data}`)) return
 
+    prev_searches.push(`${data}`)
+    
     processPayload(data)
 
     //propogate message to rest of swarm
@@ -57,8 +59,6 @@ export function sendSearch(distance_score, vector) {
 
 //Write to swarm
 const sendToPeers = (data) => {
-  prev_searches.push(`${data}`)
-
   for (const conn of conns) {
     conn.write(data)
   }
