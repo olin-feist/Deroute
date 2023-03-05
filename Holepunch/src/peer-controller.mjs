@@ -8,7 +8,7 @@ export function search(distance_score, vector){
 //SWARM -> SS -> SWARM
 export function proccessSearch(distance_score, vector){
     //TODO: Send to controller -> SS
-    return ["www.w", "b.com"]
+    return ["test5", "test4"]
 }
 
 //SWARM -> BE
@@ -24,5 +24,4 @@ export function pingSwarm(){
 // Broadcast stdin to all connections
 process.stdin.on('data', data => {
     search(0.9, data)
-    console.log(pingSwarm())
   })
