@@ -18,6 +18,8 @@ const payload_type = {
   response: 1
 }
 
+export let isOnline = false
+
 // Keep track of all connections and console.log incoming data
 const conns = []
 swarm.on('connection', conn => {
@@ -44,6 +46,7 @@ const discovery = swarm.join(topic, { client: true, server: true })
 // The flushed promise will resolve when the topic has been fully announced to the DHT
 discovery.flushed().then(() => {
   console.log('joined topic:', b4a.toString(topic, 'hex'))
+  isOnline = true
 })
 
 //Send search query
@@ -100,6 +103,7 @@ const processPayload = (data) => {
     default:
   }
 }
+
 
 //process args
 let debug_mode = false;

@@ -1,4 +1,4 @@
-import { sendSearch } from "./peer.mjs"
+import { sendSearch, isOnline } from "./peer.mjs"
 
 //BE -> SS -> SWARM
 export function search(distance_score, vector){
@@ -17,7 +17,12 @@ export function recieveURL(url_list){
     console.log(url_list)
 }
 
+export function pingSwarm(){
+    return isOnline
+}
+
 // Broadcast stdin to all connections
 process.stdin.on('data', data => {
     search(0.9, data)
+    console.log(pingSwarm())
   })
