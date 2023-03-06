@@ -33,28 +33,28 @@ class search_ret(ctypes.Structure):
 mutex = Lock() #mutex lock for updating database
 
 # Load the required dependencies
-libstdc = ctypes.WinDLL('../bin/libstdc++-6.dll')
-libgcc_s_seh = ctypes.WinDLL('../bin/libgcc_s_seh-1.dll')
-libwinpthread = ctypes.WinDLL('../bin/libwinpthread-1.dll')
-mkl_rt = ctypes.WinDLL('../bin/mkl_rt.2.dll')
-mkl_intel_thread = ctypes.WinDLL('../bin/mkl_intel_thread.2.dll')
-libgomp = ctypes.WinDLL('../bin/libgomp-1.dll')
-libfaiss = ctypes.WinDLL('../bin/libfaiss.dll')
-libfasttext = ctypes.WinDLL('../bin/libfasttext.dll')
+libstdc = ctypes.WinDLL('dlls/libstdc++-6.dll')
+libgcc_s_seh = ctypes.WinDLL('dlls/libgcc_s_seh-1.dll')
+libwinpthread = ctypes.WinDLL('dlls/libwinpthread-1.dll')
+mkl_rt = ctypes.WinDLL('dlls/mkl_rt.2.dll')
+mkl_intel_thread = ctypes.WinDLL('dlls/mkl_intel_thread.2.dll')
+libgomp = ctypes.WinDLL('dlls/libgomp-1.dll')
+libfaiss = ctypes.WinDLL('dlls/libfaiss.dll')
+libfasttext = ctypes.WinDLL('dlls/libfasttext.dll')
 
 # Load the main DLL's
-embed_dll = ctypes.WinDLL('../bin/libembed.dll')
-search_dll = ctypes.WinDLL('../bin/libsearch.dll')
+embed_dll = ctypes.WinDLL('dlls/libembed.dll')
+search_dll = ctypes.WinDLL('dlls/libsearch.dll')
 embed_dll.getVector.restype = ctypes.POINTER(ctypes.c_float)
 search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.get_vector_size.restype = ctypes.c_int
 
 
-embed_dll.load_model(b"../bin/model.q.ftz") #load model
-vectors_path="../data/vectors.bin"          #database path
-urls_path="../data/urls.bin"                #labels path
-urls_size=300                               #labels path url size
-vector_size= embed_dll.get_vector_size()    #get vector size
+embed_dll.load_model(b"data/model.q.ftz") #load model
+vectors_path="data/vectors.bin"           #database path
+urls_path="data/urls.bin"                 #labels path
+urls_size=300                             #labels path url size
+vector_size= embed_dll.get_vector_size()  #get vector size
 
 app = Flask(__name__)
 
