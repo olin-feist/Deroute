@@ -1,27 +1,45 @@
 import { sendSearch, isOnline } from "./peer.mjs"
 
+const results = { results: [] }
+let searching = false
+
 //BE -> SS -> SWARM
-export function search(distance_score, vector){
-    sendSearch(distance_score, vector)
+export async function search(buf_with_embedded) {
+    const embedded_search_val = `${buf_with_embedded}`
+    results.results = []
+    searching = true
+    sendSearch(embedded_search_val)
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    searching = false
+    return results
 }
 
 //SWARM -> SS -> SWARM
-export function proccessSearch(distance_score, vector){
+export function proccessSearch(buf_with_embedded) {
     //TODO: Send to controller -> SS
-    return ["test5", "test4"]
+    // that call should be return an array of JSON objects
+    //i.e. return Controller.SS(buf_with_embedded)
+
+    const test_results = [{ dist: "test44", url: "test45" }]
+    return test_results
+}
+//Used by peer.mjs
+export function recieveURL(url_list) {
+    if (!searching){
+        return
+    }
+    JSON.parse(url_list).forEach(element => {
+        results.results.push(element)
+    })
 }
 
-//SWARM -> BE
-export function recieveURL(url_list){
-    //TODO: Send to controller -> BE
-    console.log(url_list)
-}
-
-export function pingSwarm(){
+export function pingSwarm() {
     return isOnline
 }
 
 // Broadcast stdin to all connections
 process.stdin.on('data', data => {
-    search(0.9, data)
-  })
+    search(Buffer.from(data)).then((results)=> console.log(results))
+})
