@@ -1,8 +1,0 @@
-node_modules/
-test.mjs
-writer.mjs
-reader.mjs
-writer-storage/
-reader-storage/
-core/
-beam.mjs

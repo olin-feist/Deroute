@@ -38,7 +38,7 @@ function loadLatestUrlPost() {
 function loadLatestPing() {
     document.getElementById('isConnected').innerHTML = '';
     chrome.storage.session.get(["previousPing"]).then((data) => {
-        popupPing(data.previousPing && data.previousPing.status && data.previousPing.status == 'success' ? 'connected to swarm' : 'swarm not reachable');
+        popupPing(data.previousPing && data.previousPing.status && data.previousPing.status ? 'connected to swarm' : 'swarm not reachable');
     })
 }
 
