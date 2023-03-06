@@ -11,6 +11,7 @@
     "hypercore": "^10.7.0",
     "hyperswarm": "^4.3.6",
     "localdrive": "^1.4.0",
-    "node-fetch": "^2.6.9"
+    "node-fetch": "^2.6.9",
+    "pm2": "^5.2.2"
   }
 }
