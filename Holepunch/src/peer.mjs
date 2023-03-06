@@ -2,6 +2,7 @@ import Hyperswarm from 'hyperswarm'
 import goodbye from 'graceful-goodbye'
 import crypto from 'hypercore-crypto'
 import b4a from 'b4a'
+import { Buffer } from 'node:buffer';
 
 import Queue from './queue.mjs'
 import * as peer_controller from './peer-controller.mjs'
@@ -52,8 +53,8 @@ discovery.flushed().then(() => {
 })
 
 //Send search query
-export function sendSearch(distance_score, vector) {
-  let query = buildSearchPayload(distance_score, `${vector}`)
+export function sendSearch(embedded_search_val) {
+  let query = buildSearchPayload(embedded_search_val)
   sendToPeers(query)
 }
 
@@ -63,41 +64,50 @@ const sendToPeers = (data) => {
     conn.write(data)
   }
 }
-
-const buildSearchPayload = (distance_score, vector) => {
-  let d = `${payload_type.search}${b4a.toString(swarm.keyPair.publicKey, 'hex')}${distance_score.toPrecision(16)}${vector}`
+/* 
+ * Type: String
+ * with index 0 being the payload type, index 1 to 65 being the users key,
+ * and index 65+ being the embedded search value
+ */
+const buildSearchPayload = (embedded_search_val) => {
+  let d = `${payload_type.search}${b4a.toString(swarm.keyPair.publicKey, 'hex')}${embedded_search_val}`
   debug(`My Search Payload: ${d}\n`)
   return b4a.from(d)
 }
+/* 
+ * Type: String
+ * with index 0 being the payload type, index 1 to 65 being the users key,
+ * and index 65+ being the url_list
+ */
 const buildResponsePayload = (user_key, url_list) => {
-  let d = '1' + user_key + url_list
+  let d = `${payload_type.response}${user_key}${url_list}`
   debug(`My Response Payload: ${d}\n`)
   return b4a.from(d)
 }
 
 //proccess payload and call respectve fucntions
 const processPayload = (data) => {
-  let type = parseInt(`${data}`.slice(0, 1))
-  debug(`payload_type: ${type}\n`)
+  const string_data = `${data}`
+  let type = parseInt(string_data.slice(0, 1))
+  debug(`payload_type: ${type}`)
   switch (type) {
     case payload_type.search:
-      debug(`peer: ${`${data}`.slice(1, 65)}\ndistance score: ${`${data}`.slice(65, 83)}\n vector: ${`${data}`.slice(83)}\n`)
-      let user = `${data}`.slice(1, 65)
-      let distance_score = `${data}`.slice(65, 83)
-      let vector = `${data}`.slice(83)
+      debug(`peer: ${string_data.slice(1, 65)}\ndata: ${string_data.slice(65)}\n`)
+      let user = string_data.slice(1, 65)
+      let embedded_search_val = string_data.slice(65)
 
-      let url_list = peer_controller.proccessSearch(distance_score, vector)
+      let url_list = peer_controller.proccessSearch(Buffer.from(embedded_search_val))
       if (url_list.length == 0) {
         return
       }
-
-      sendToPeers(buildResponsePayload(user, url_list))
+      
+      sendToPeers(buildResponsePayload(user, JSON.stringify(url_list)))
       break;
     case payload_type.response:
-      debug(`peer: ${`${data}`.slice(1, 65)}\nURL_LIST: ${`${data}`.slice(65, 83)}\n`)
+      debug(`peer: ${string_data.slice(1, 65)}\nURL_LIST: ${string_data.slice(65)}\n`)
 
-      if (b4a.toString(swarm.keyPair.publicKey, 'hex') === `${data}`.slice(1, 65)) {
-        peer_controller.recieveURL(`${data}`.slice(65))
+      if (b4a.toString(swarm.keyPair.publicKey, 'hex') === string_data.slice(1, 65)) {
+        peer_controller.recieveURL(string_data.slice(65))
       }
       break;
     default:
