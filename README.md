@@ -1,86 +1,80 @@
 # Deroute
-This branch contains the search tools used by the Deroute extension.
-### Search:
-The search tool will find the nearest neighbors of given database of dense vectors.
-``` shell
-search database_path label_path *query_path
-```
-- `database_path` path to binary file of dense vectors to be searched <br>
-- `label_path` path to binary file of urls <br>
-- `query_path` optional path to binary file of query vectors, if left unset will read binary data from stdin<br>
+Deroute is a peer to peer search engine
 
-### Embed:
-The embed tool will continuously read lines from stdin and return a dense vector representation for each line of text, in the form of a binary file.
-``` shell
-embed model_path *output_path
-```
-- `model_path` path to the word embedding model<br>
-- `output_path` optional parameter to specifiy output of embedding, if left unset will output vector as binary to stdout<br>
+## Table Of Contents
+* [Distributed Networking](#Distributed)
+* [Browser Extension](#Browser)
+* [Local Search Engine](#search)
 
-### Locally Sensitive Hashing:
-Given a binary file of vectors will compute and print the corresponding 128bit hash value.
-``` shell
-lsh vectors_path
-```
-- `vectors_path` path to binary file of dense vectors to be hashed <br>
+<a name="Distributed"/> <a>
+## Distributed Networking
 
-### Website Parser:
-The website parser will take a url for a website and parse it down to its relevant content
+<a name="Browser"/> <a>
+## Browser Extension
+
+<a name="search"/> <a>
+## Local Search Engine
+The backend search engine runs on the local host on port 5000: `http://127.0.0.1:5000/`
+### Embedding a Website:
+Given a valid URL will generate and store a dense vector representation
 ``` shell
-python src/parse_website.py -output -url -debug
+http://127.0.0.1:5000/embedUrl
 ```
-- `url` url of website to be parsed<br>
-- `output` location where URL labels will be written to <br>
-- `*debug` optional option that if set will ignore duplicate url, cant be used with `output` <br>
-# Binary Data format
-All binary data sent and recieved from Deroute tools will be in the following format <br>
+#### Javascript Example
+```javascript
+ var options = {
+     url: 'http://127.0.0.1:5000/embedQuery',
+     method: 'POST',
+     json: { url:url_to_website }
+ };
 ```
-[D][N]
-v0
-v1
-.
-.
-.
-vN
+#### Response
 ```
-- <b>D</b> : 4 byte integer corresponding to dimensions of vectors
-- <b>N</b> : 4 byte integer corresponding to the number of vectors
-- <b>V</b><sub>i</sub> : Vector of 4 byte floating point values with number of elements equal to <b>[D]</b> 
-# Building similarity search tools from source
-### Requirments
-* CMake
-* Mingw64 compiler
-* Intel MKL
-  * mkl_rt.2.dll
-  * mkl_intel_thread.2.dll
-* FAISS
-  * include directories
-  * libfaiss.dll.a
-  * libfaiss.dll
-* FastText
-  * include directories
-  * libfasttext.dll.a
-  * libfasttext.dll
-  
-### Step 1: Invoke Cmake
-``` shell
-cmake -G "MinGW Makefiles" -B build .
+{'response': 'Error'}
+or
+{'response': 'Done'}
 ```
 
-### Step 2: Invoke Make
+### Embedding a Query:
+Given a valid single line of text will generate and return a dense vector representation
 ``` shell
-mingw32-make -C build ${target}
+http://127.0.0.1:5000/embedQuery
 ```
-Current targets include:
-* search
-* embed
-* vectools
-* lsh
+#### Javascript Example
+```javascript
+var options = {
+    url: 'http://127.0.0.1:5000/embedQuery',
+    method: 'POST',
+    json: { query:search_query },
+    encoding: null // Set encoding to null to receive response as a Buffer
+};
+```
+#### Response
+```
+buffer
+```
+### Searching:
+Given a vector returned by `embedQuery` will return a list of nearest neighbors related to query
+``` shell
+http://127.0.0.1:5000/search
+```
+#### Javascript Example
+```javascript
+var options = {
+    url: 'http://127.0.0.1:5000/search',
+    method: 'POST',
+    body: dense_vector
+};
+```
+#### Response
+```
+[{"dist":float,"url":url},
+...
+{"dist":float,"url":url}]
+```
+### Test Scripts:
+#### build_dataset.py
+Builds a dataset of websites taken from urls.txt
+#### query.py
+Querys dataset built by previous script
 
-# Test Scripts
-### build_dataset.sh
-Builds a dataset of websites taken from a text file of urls passed via command line (example URLS in test/)
-### query.sh
-Querys dataset built by previous script using query built from `tests/query_plain.txt`
-### query.js
-javascript file that will utilize the Deroute tools to query a dataset built from `build_dataset.sh`
