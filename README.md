@@ -23,7 +23,7 @@ http://127.0.0.1:5000/embedUrl
 #### Javascript Example
 ```javascript
  var options = {
-     url: 'http://127.0.0.1:5000/embedQuery',
+     url: 'http://127.0.0.1:5000/embedUrl',
      method: 'POST',
      json: { url:url_to_website }
  };
