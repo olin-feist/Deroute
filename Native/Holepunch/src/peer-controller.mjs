@@ -1,4 +1,5 @@
 import { sendSearch, isOnline } from "./peer.mjs"
+import fetch from 'node-fetch';
 
 const results = { results: [] }
 let searching = false
@@ -21,9 +22,19 @@ export function proccessSearch(buf_with_embedded) {
     //TODO: Send to controller -> SS
     // that call should be return an array of JSON objects
     //i.e. return Controller.SS(buf_with_embedded)
-
-    const test_results = [{ relevance: "test44", url: "test45" }]
-    return test_results
+    fetch(`http://127.0.0.1:5000/search`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: buf_with_embedded
+    })
+    .then(response => {
+        return response.json();
+    })
+    .catch(err => {
+        console.log(err);
+    })
 }
 //Used by peer.mjs
 export function recieveURL(url_list) {
