@@ -32,7 +32,7 @@ swarm.on('connection', conn => {
 
     //check to see if we have gotten data b4
     if (prev_searches.contains(`${data}`)) return
-    
+
     processPayload(data)
 
     //propogate message to rest of swarm
@@ -97,12 +97,14 @@ const processPayload = (data) => {
       let user = string_data.slice(1, 65)
       let embedded_search_val = string_data.slice(65)
 
-      let url_list = peer_controller.proccessSearch(Buffer.from(embedded_search_val))
-      if (url_list.length == 0) {
-        return
-      }
-      
-      sendToPeers(buildResponsePayload(user, JSON.stringify(url_list)))
+      const url_list = peer_controller.proccessSearch(Buffer.from(embedded_search_val))
+      url_list.then((data) => {
+        if (data.length == 0) {
+          return
+        }
+
+        sendToPeers(buildResponsePayload(user, JSON.stringify(data)))
+      })
       break;
     case payload_type.response:
       debug(`peer: ${string_data.slice(1, 65)}\nURL_LIST: ${string_data.slice(65)}\n`)
@@ -119,7 +121,7 @@ const processPayload = (data) => {
 //process args
 let debug_mode = false;
 process.argv.forEach(element => {
-  if (element == '-d'){
+  if (element == '-d') {
     debug_mode = true;
   }
 });
