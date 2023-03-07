@@ -27,7 +27,6 @@ app.post('/query', (req, res) => {
     .then(vector => {
         pController.search(vector)
         .then(results => {
-            console.log(results);
             res.json({
                 query: req.body.query,
                 results: results.results
@@ -45,9 +44,6 @@ app.post('/url', (req, res) => {
         body: JSON.stringify({
             url: req.body.url
         })
-    })
-    .then(response => {
-        console.log(response);
     })
     .catch(err => {
         console.log(err);
