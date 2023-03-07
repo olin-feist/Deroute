@@ -32,8 +32,6 @@ swarm.on('connection', conn => {
 
     //check to see if we have gotten data b4
     if (prev_searches.contains(`${data}`)) return
-
-    prev_searches.push(`${data}`)
     
     processPayload(data)
 
@@ -55,11 +53,14 @@ discovery.flushed().then(() => {
 //Send search query
 export function sendSearch(embedded_search_val) {
   let query = buildSearchPayload(embedded_search_val)
+  processPayload(query)
   sendToPeers(query)
 }
 
 //Write to swarm
 const sendToPeers = (data) => {
+  prev_searches.push(`${data}`)
+
   for (const conn of conns) {
     conn.write(data)
   }
