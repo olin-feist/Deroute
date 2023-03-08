@@ -6,6 +6,7 @@ import { Buffer } from 'node:buffer';
 
 import Queue from './queue.mjs'
 import * as peer_controller from './peer-controller.mjs'
+import { url } from 'node:inspector';
 
 const swarm = new Hyperswarm()
 goodbye(() => {
@@ -87,7 +88,7 @@ const buildResponsePayload = (user_key, url_list) => {
 }
 
 //proccess payload and call respectve fucntions
-const processPayload = (data) => {
+async function processPayload(data) {
   const string_data = `${data}`
   let type = parseInt(string_data.slice(0, 1))
   debug(`payload_type: ${type}`)
@@ -97,14 +98,17 @@ const processPayload = (data) => {
       let user = string_data.slice(1, 65)
       let embedded_search_val = string_data.slice(65)
 
-      const url_list = peer_controller.proccessSearch(Buffer.from(embedded_search_val))
-      url_list.then((data) => {
-        if (data.length == 0) {
-          return
-        }
+      const url_list = await peer_controller.proccessSearch(Buffer.from(embedded_search_val))
 
-        sendToPeers(buildResponsePayload(user, JSON.stringify(data)))
-      })
+      if (url_list.length == 0) {
+        return
+      }
+      if (user === b4a.toString(swarm.keyPair.publicKey, 'hex')){
+        processPayload(buildResponsePayload(user, JSON.stringify(url_list)))
+      }else{
+        sendToPeers(buildResponsePayload(user, JSON.stringify(url_list)))
+      }
+      
       break;
     case payload_type.response:
       debug(`peer: ${string_data.slice(1, 65)}\nURL_LIST: ${string_data.slice(65)}\n`)
