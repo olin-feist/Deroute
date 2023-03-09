@@ -67,7 +67,8 @@ app.listen(port, (error) => {
 async function queryFasttext(options) {
     try {
         const embedResponse = await fetch('http://127.0.0.1:5000/embedQuery', options);
-        return await embedResponse.buffer();
+        const jsonResponse = await embedResponse.json(); // parse JSON response
+        return { vector: jsonResponse.vector }; //return json of embedded
     } catch (error) {
         console.error(error);
     }
