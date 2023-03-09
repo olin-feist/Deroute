@@ -90,25 +90,24 @@ const buildResponsePayload = (user_key, url_list) => {
 //proccess payload and call respectve fucntions
 async function processPayload(data) {
   const string_data = `${data}`
-  let type = parseInt(string_data.slice(0, 1))
+  const type = parseInt(string_data.slice(0, 1))
   debug(`payload_type: ${type}`)
   switch (type) {
     case payload_type.search:
       debug(`peer: ${string_data.slice(1, 65)}\ndata: ${string_data.slice(65)}\n`)
-      let user = string_data.slice(1, 65)
-      let embedded_search_val = string_data.slice(65)
-
-      const url_list = await peer_controller.proccessSearch(Buffer.from(embedded_search_val))
+      const user = string_data.slice(1, 65)
+      const embedded_search_val = string_data.slice(65)
+      const url_list = await peer_controller.proccessSearch(embedded_search_val)
 
       if (url_list.length == 0) {
         return
       }
-      if (user === b4a.toString(swarm.keyPair.publicKey, 'hex')){
+      if (user === b4a.toString(swarm.keyPair.publicKey, 'hex')) {
         processPayload(buildResponsePayload(user, JSON.stringify(url_list)))
-      }else{
+      } else {
         sendToPeers(buildResponsePayload(user, JSON.stringify(url_list)))
       }
-      
+
       break;
     case payload_type.response:
       debug(`peer: ${string_data.slice(1, 65)}\nURL_LIST: ${string_data.slice(65)}\n`)
