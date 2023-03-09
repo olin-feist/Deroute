@@ -8,10 +8,22 @@ Deroute is a peer to peer search engine
 
 <a name="Distributed"/> <a>
 ## Distributed Networking
-
+### Usage:
+```
+cd .\Native\Holepunch\
+npm install
+node controller.mjs [-d]
+```
 <a name="Browser"/> <a>
 ## Browser Extension
-
+### Usage:
+```
+cd .\Extension\
+npm install
+```
+- In Google Chrome, go to Extensions>Manage Extensions.
+- Make sure Developer Mode is on.
+- Click "Load Unpacked", then navigate to and select the `.\Extension\` folder.
 <a name="search"/> <a>
 ## Local Search Engine
 The backend search engine runs on the local host on port 5000: `http://127.0.0.1:5000/`
