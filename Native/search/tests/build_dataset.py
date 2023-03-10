@@ -1,5 +1,7 @@
 import ctypes
 import os
+import sys
+sys.path.append("../src")
 from parse_website import parse_website
 
 def embed(file_path,text):

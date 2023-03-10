@@ -1,5 +1,4 @@
 import ctypes
-from parse_website import parse_website
 
 def embed(file_path,text):
     float_array_pointer=embed_dll.getVector(file_path, text)
