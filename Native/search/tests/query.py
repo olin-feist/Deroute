@@ -5,8 +5,8 @@ def embed(file_path,text):
     
     return float_array_pointer
 
-def search_local(database,labels,query):
-    search_results=search_dll.search(database,labels,query)
+def search_local(query):
+    search_results=search_dll.search(query)
     return search_results
 
 vectors_path="../data/vectors.bin"
@@ -37,6 +37,8 @@ embed_dll.getVector.restype = ctypes.POINTER(ctypes.c_float)
 search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.load_model(b"../data/model.q.ftz")
 
+search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
+search_dll.update_index(vectors_path.encode("utf-8"))
 try:
     #search request from stdin
     while(True):
@@ -45,7 +47,7 @@ try:
         print("Results:")
         vector=embed(b"",query.encode("utf-8"))
 
-        results = search_local(vectors_path.encode("utf-8"),urls_path.encode("utf-8"),vector)
+        results = search_local(vector)
 
         k=results.contents.k
         for i in range(k):

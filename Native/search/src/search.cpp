@@ -9,7 +9,7 @@
 #include <faiss/impl/AuxIndexStructures.h>
 
 #include <vec_tools.h>
-//search database_path urls_path query_path
+
 // 64-bit int
 using idx_t = faiss::Index::idx_t;
 
@@ -21,36 +21,91 @@ struct search_ret {
 
 
 faiss::IndexFlatIP search_index;
-
+bool isLoaded = false;
+int d;     // dimension
+int nb;    // entrys
+int nq=1;  // number of queries
+char* vectors_path;
+char* urls_path;
 
 extern "C"
-void update_index(float* vector){
-    search_index.add(1, vector);
+int update_index(){
+    if(isLoaded){
+        std::fstream file(vectors_path , std::ios::in | std::ios::binary);
+        if(!file) {
+            std::cerr << "Error: could not open vectors file" << std::endl;
+            return -1;
+        }
+
+        int dimensions;
+        file.read((char*) &dimensions, 4);
+
+        int elements;
+        file.read((char*) &elements, 4); 
+        if((elements-nb)==0){
+            std::cerr << "Warning: no new vectors to add" << std::endl;
+            return 1;
+        }
+        float *vec = new float[(elements-nb)*dimensions];
+
+        file.seekp(8+sizeof(float)*((nb)*dimensions), std::ios_base::beg); //skip to new vectors
+
+        //get new vectors
+        for(int i=0;i<(elements-nb);i++){
+            file.read((char*) &vec[dimensions*i], sizeof(float)*dimensions);
+        }
+
+
+        file.close();
+        search_index.add((elements-nb), vec); //add new vectors
+        delete[] vec;
+
+        return 1;
+
+    }else{
+
+        std::cerr<<"Error: Database not loaded"<<std::endl;
+        return -1;
+    }
 }
 
-
 extern "C"
-search_ret* search(char* database_path, char* labels_path, float* queries){
+int load_data(char* vectors_p,char* urls_p){
+    
+    
+    if(isLoaded){
+        std::cerr<<"Error: Data already loaded"<<std::endl;
+        return -1;
+    }
+    vectors_path = (char*)malloc(strlen(vectors_p) + 1);
+    urls_path = (char*)malloc(strlen(urls_p) + 1);
+    strcpy(vectors_path,vectors_p);
+    strcpy(urls_path,urls_p);
 
-    
-    int d;     // dimension
-    int nb;    // database size
-    int nq=1;    // number of queries
-    
-    std::ifstream file;
-    
-    //---------------------------- database file ----------------------------
-    float* database =  vectools::read_vectors(database_path, &d, &nb);
-    if(database==NULL)
-        exit(1);
-    //-----------------------------------------------------------------------
+    float* vectors =  vectools::read_vectors(vectors_path, &d, &nb);
 
+    if(vectors==NULL){
+        std::cerr<<"Error: No vectors file found"<<std::endl;
+        return -1;
+    }
 
     search_index= faiss::IndexFlatIP(d); // call constructor
-    search_index.add(nb, database); // add vectors to the index
+    search_index.add(nb, vectors); // add vectors to the index
 
+    delete[] vectors;
+    isLoaded = true;
+    return 1;
+}
 
+extern "C"
+search_ret* search(float* queries){
 
+    if(!isLoaded){
+        std::cerr<<"Error: Indexes not loaded"<<std::endl;
+        return NULL;
+    }
+    std::ifstream file;
+    
     search_ret* ret = new search_ret;
 
     { // search queries
@@ -93,12 +148,13 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         
         ret->k=keep_indexes;
         // print results
-        file.open(labels_path,std::ios::binary);
+        file.open(urls_path,std::ios::binary);
         
         if(!file) {
-            std::cerr << "Cannot open file!" << std::endl;
-            exit(1);
+            std::cerr<<"Error: No URLS file found"<<std::endl;    
+            return NULL;
         } 
+
         ret->urls=(char*) malloc(k*300);
         
         char* url= new char[300];
@@ -117,7 +173,6 @@ search_ret* search(char* database_path, char* labels_path, float* queries){
         
     }
 
-    delete[] database;
     return ret;
 
     

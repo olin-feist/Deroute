@@ -9,10 +9,6 @@ def embed(file_path,text):
     
     return float_array_pointer
 
-def search_local(database,labels,query):
-    search_results=search_dll.search(database,labels,query)
-    return search_results
-
 vectors_path="../data/vectors.bin"
 urls_path="../data/urls.bin"
 
