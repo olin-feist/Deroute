@@ -11,12 +11,14 @@ using namespace fasttext;
 FastText fastText;
 bool isFastTextInitialized = false;
 
+//load fasttex model
 extern "C"
 void load_model(char* path){
     fastText.loadModel(path);
     isFastTextInitialized=true;
 }
 
+//get dimensions of vectors used for given model
 extern "C"
 int get_vector_size(){
     if(!isFastTextInitialized){
@@ -27,6 +29,7 @@ int get_vector_size(){
     return fastText.getDimension();
 }
 
+//pre process string for embedding
 std::string pre_process(std::string sentence){
 
 
@@ -76,7 +79,6 @@ std::string pre_process(std::string sentence){
     return sentence;
 
 }
-
 
 //add vector to binary file
 int storeVector(std::string path, Vector vec){
@@ -138,7 +140,6 @@ int storeVector(std::string path, Vector vec){
     return 0;
 }
 
-
 //get sentence vectors
 extern "C"
 float* getVector(char* output, char* sentence){
@@ -165,7 +166,7 @@ float* getVector(char* output, char* sentence){
     //if output path specified
     if(output[0]!='\0'){
         storeVector(output,svec);
-        return NULL;
+        return nullptr;
     //write to stdout
     }else{
         float* ret = (float*) malloc(dimensions*sizeof(float));
