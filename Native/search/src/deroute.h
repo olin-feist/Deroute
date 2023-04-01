@@ -1,23 +1,33 @@
 #include <vec_tools.h>
 namespace deroute{
     namespace search{ 
+
         /**
          * Return type for search
          * @param k          number of results found
          * @param distances  pointer to list of distance
-         * @param urls       pointer to list of 300 charecter labels
+         * @param urls       pointer to list of urls
          */
         struct search_ret { 
             int k;
             float* distances;
-            char* urls;
+            char** urls;
         };
         
         /**
-         * Update index space
-         * @param vector vector to be added to index space
+         * Update the current database in memory with new content from local file
+         * @return              1 success -1 Error
          */
-        void update_index(float* vector);
+        extern "C"
+        int update_index();
+
+        /**
+         * Load vectors and their corresponding labels (URLS) into memory
+         * @param vectors_p     path to .bin of vectors
+         * @param urls_p        path to .bin of urls
+         * @return              1 success -1 Error
+         */
+        int load_data(char* vectors_p, char* urls_p);
 
         /**
          * Perform similarity search
