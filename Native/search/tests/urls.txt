@@ -31,6 +31,5 @@ https://en.wikipedia.org/wiki/Search_algorithm
 https://en.wikipedia.org/wiki/Four_color_theorem
 https://en.wikipedia.org/wiki/Minecraft
 https://en.wikipedia.org/wiki/Procedurally_generated
-https://en.wikipedia.org/wiki/Procedural_generation
 https://en.wikipedia.org/wiki/Generative_music
 https://en.wikipedia.org/wiki/Generative_grammar

@@ -18,8 +18,6 @@ def search_local(query):
 
 #free struct returned by search
 def free_search_results(struct_ptr):
-    search_dll.free_mem(struct_ptr.contents.distances)
-    search_dll.free_mem(struct_ptr.contents.urls)
     search_dll.delete_struct(struct_ptr)
 
 #search result struct
@@ -27,7 +25,7 @@ class search_ret(ctypes.Structure):
     _fields_ = [
         ("k", ctypes.c_int),
         ("distances", ctypes.POINTER(ctypes.c_float)),
-        ("urls", ctypes.POINTER(ctypes.c_char)),
+        ("urls",  ctypes.POINTER(ctypes.c_char_p)),
     ]
 
 
@@ -63,6 +61,8 @@ app = Flask(__name__)
 #embed url request
 @app.route('/embedUrl', methods=['POST'])
 def embed_url():
+    global isDataLoaded
+
     data = request.get_json()
     url = data['url']
     
@@ -84,6 +84,7 @@ def embed_url():
             erno=search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
             if(erno==1):
                 print("Data successfully loaded")
+                isDataLoaded=True
             else:
                 print("Error: Intial data load failed")
 
@@ -119,7 +120,7 @@ def embed_query():
 
     return jsonify({'vector': base64.b64encode(buf).decode('utf-8')})
 
-#search vectors request
+#search local database request
 @app.route('/search', methods=['POST'])
 def search():
     
@@ -142,11 +143,13 @@ def search():
         return jsonify({'response': 'Error search failed'})
     
     ret =[]
-    
+    print(results.contents.urls[0])
     k=results.contents.k
+    
     for i in range(k):
         single_res={}
-        single_res["url"]=results.contents.urls[i*urls_size:(i+1)*urls_size].decode("utf-8").replace("\0", "")
+        
+        single_res["url"]=results.contents.urls[i].decode("utf-8").replace("\0", "")
         single_res["dist"]=results.contents.distances[i]
         ret.append(single_res)
 
