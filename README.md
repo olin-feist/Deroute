@@ -29,18 +29,21 @@ npm install
 ## Local Search Engine
 The local search engine manages the searching and storage of websites on a single user's machine. The local search engine has three main functionalities: store a website, generate a representation for a query, and search a local database. The backend search engine runs on the local host on port 5000 and listens for requests via http.
 ### Embedding a Website:
-Given a valid URL will generate and store a dense vector representation
+Given a valid URL will generate and store a dense vector representation of the websited content.
+![alt text](https://i.imgur.com/2Ya6U6I.png)
 #### POST request URL
 ``` shell
 http://127.0.0.1:5000/embedUrl
 ```
 #### Example Config
 ```javascript
- var options = {
-     url: 'http://127.0.0.1:5000/embedUrl',
-     method: 'POST',
-     body: { url:url_to_website }
- };
+var options={
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url: url}),
+}
 ```
 #### Response
 ```
@@ -50,17 +53,20 @@ or
 ```
 
 ### Embedding a Query:
-Given a valid single line of text will generate and return a dense vector representation
+Given a valid single line of text will generate and return a dense vector representation.
+![alt text](https://i.imgur.com/Ph37KYw.png)
 #### POST request URL
 ``` shell
 http://127.0.0.1:5000/embedQuery
 ```
 #### Example Config
 ```javascript
-var options = {
-    url: 'http://127.0.0.1:5000/embedQuery',
-    method: 'POST',
-    body: { query:search_query }
+var options={
+  method: 'POST',
+  headers: {
+  'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ query: search_query}),
 };
 ```
 #### Response
@@ -68,18 +74,21 @@ var options = {
 {vector: dense_vector}
 ```
 ### Searching:
-Given a vector returned by `embedQuery` will return a list of nearest neighbors related to query
+Given a vector returned by `embedQuery` will return a list of nearest neighbors related to the query.
+![alt text](https://i.imgur.com/mtIO7DI.png)
 #### POST request URL
 ``` shell
 http://127.0.0.1:5000/search
 ```
 #### Example Config
 ```javascript
-var options = {
-    url: 'http://127.0.0.1:5000/search',
+var options={
     method: 'POST',
-    body: {vector: vector}
-};
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ vector: dense_vector}),
+}
 ```
 #### Response
 ```
