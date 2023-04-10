@@ -29,6 +29,14 @@ swarm.on('connection', conn => {
   debug(`* got a connection from: ${name} *`)
   conns.push(conn)
   conn.once('close', () => conns.splice(conns.indexOf(conn), 1))
+  conn.once('error', (err) => {
+    //socket closed by peer
+    if(err.code === 'ECONNRESET'){
+      conn.destroy()
+      return
+    }
+    console.log(err)
+  })
   conn.on('data', data => {
 
     //check to see if we have gotten data b4
