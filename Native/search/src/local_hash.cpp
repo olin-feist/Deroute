@@ -1,6 +1,7 @@
-#include <vec_tools.h>
 #include <faiss/IndexLSH.h>
 #include <bitset>
+
+#include "utils.h"
 
 #define HASH_SIZE 128
 
@@ -13,7 +14,7 @@ __uint128_t* local_hash(char* database_path){
     int entrys;    // database size
 
     //get database
-    float* database =  vectools::read_vectors(database_path, &dimensions, &entrys);
+    float* database =  utils::read_vectors(database_path, &dimensions, &entrys);
     if(database==NULL)
         exit(1);
 
@@ -23,10 +24,10 @@ __uint128_t* local_hash(char* database_path){
     float *avg_vec= new float[dimensions];
     std::fill(avg_vec, avg_vec + dimensions, 0.0);
     for(int i=0;i<entrys;i++){
-        vectools::add_vectors(avg_vec,&database[i*dimensions],dimensions);
+        utils::add_vectors(avg_vec,&database[i*dimensions],dimensions);
     }
     float f= 1.0/entrys;
-    vectools::mul_vector(avg_vec,f,dimensions);
+    utils::mul_vector(avg_vec,f,dimensions);
 
 
     //get encoding
