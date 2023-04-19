@@ -1,4 +1,8 @@
 #include <vec_tools.h>
+/**
+* Documentation for all the local search engine functions
+*/
+
 namespace deroute{
     namespace search{ 
 
@@ -18,7 +22,6 @@ namespace deroute{
          * Update the current database in memory with new content from local file
          * @return              1 success -1 Error
          */
-        extern "C"
         int update_index();
 
         /**

@@ -1,55 +1,25 @@
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-#include <fcntl.h>
-#include <fstream>
-#include <map>
-#include <algorithm>
-#include <faiss/IndexFlat.h>
-#include <faiss/impl/AuxIndexStructures.h>
+#include "search.h"
 
-#include <vec_tools.h>
 
-// 64-bit int
-using idx_t = faiss::Index::idx_t;
 
-/**
- * Return type for search
- * @param k          number of results found
- * @param distances  pointer to list of distance
- * @param urls       pointer to list of urls
- */
-struct search_ret { 
-    int k;
-    float* distances;
-    char** urls;
-
-    ~search_ret() {
-        for(int i=0;i<k;i++){
-            free(urls[i]);
-        }
-        free(urls);
-        free(distances);
+//deconstructor for search return
+search_ret::~search_ret() {
+    for(int i=0;i<k;i++){
+        free(urls[i]);
     }
-};
+    free(urls);
+    free(distances);
+}
 
 
-faiss::IndexFlatIP search_index;    // FAISS index that contains dense vectors
-std::vector<std::string> urls;      // List of urls that label the FAISS index
-bool isLoaded = false;              // Status of database
-int d;                              // Dimension
-int nb;                             // entries
-int nq=1;                           // Number of queries
-char* vectors_path;                 // Path to dense vectors
-char* urls_path;                    // Path to URLS
+URLVectorIndex::URLVectorIndex():nq(1), isLoaded(false){}   //constructor
+URLVectorIndex::~URLVectorIndex(){
+    free(vectors_path);
+    free(urls_path);
+}  //deconstructor
 
-
-/**
- * Update the current database in memory with new content from local file
- * @return              1 success -1 Error
- */
-extern "C"
-int update_index(){
+//update index
+int URLVectorIndex::update(){
     //check if database is loaded
     if(isLoaded){
 
@@ -114,17 +84,8 @@ int update_index(){
     }
 }
 
-
-/**
- * Load vectors and their corresponding labels (URLS) into memory
- * @param vectors_p     path to .bin of vectors
- * @param urls_p        path to .bin of urls
- * @return              1 success -1 Error
- */
-extern "C"
-int load_data(char* vectors_p, char* urls_p){
-    
-    
+//load data
+int URLVectorIndex::load(char* vectors_p, char* urls_p){
     if(isLoaded){
         std::cerr<<"Error: Database already loaded"<<std::endl;
         return -1;
@@ -137,7 +98,7 @@ int load_data(char* vectors_p, char* urls_p){
     strcpy(urls_path,urls_p);
 
     //load vectors from vectors file
-    float* vectors =  vectools::read_vectors(vectors_path, &d, &nb);    
+    float* vectors =  utils::read_vectors(vectors_path, &d, &nb);    
     if(vectors==NULL){
         std::cerr<<"Error: No vectors file found"<<std::endl;
         return -1;
@@ -169,21 +130,15 @@ int load_data(char* vectors_p, char* urls_p){
     return 1;
 }
 
-
-/**
- * Perform similarity search
- * @param queries       vector of single query
- * @return struct containing results and distances
- */
-extern "C"
-search_ret* search(float* queries){
-
+//searching
+search_ret* URLVectorIndex::search(float* queries){
+    
     if(!isLoaded){
         std::cerr<<"Error: Database not loaded"<<std::endl;
         return NULL;
     }
     
-    search_ret* ret = new search_ret;
+    
 
     { // search queries
         
@@ -227,8 +182,9 @@ search_ret* search(float* queries){
             std::cerr<<"Error: k is too large"<<std::endl;    
             return NULL;
         } 
+        search_ret* ret = new search_ret;
         { // Build return struct
-
+            
             ret->k=keep_indexes;
             ret->urls=(char**) malloc(k*sizeof(char*));
             
@@ -247,23 +203,32 @@ search_ret* search(float* queries){
             }
         }
         
-        
+        return ret;
     }
-
-    return ret;
-
-    
     
 }
 
-//for python wrappers to dealloc pointers
-extern "C"
+
+URLVectorIndex database= URLVectorIndex(); //create database
+
+
+// -------------------------- Pyton Wrapper Calls --------------------------
+int update_index(){
+    return database.update();
+}
+
+int load_data(char* vectors_p, char* urls_p){
+    return database.load(vectors_p, urls_p);
+}
+
+search_ret* search(float* queries){
+    return database.search(queries);
+}
+
 void free_mem(void* ptr){
     free(ptr);
 }
 
-//for python wrappers to dealloc list of pointers
-extern "C"
 void free_list(void** ptr,int k){
     for(int i=0;i<k;i++){
         free(ptr[i]);
@@ -271,8 +236,7 @@ void free_list(void** ptr,int k){
     free(ptr);
 }
 
-//for python wrappers to dealloc return results
-extern "C"
 void delete_struct(search_ret* ptr){
     delete ptr;
 }
+// -------------------------- Pyton Wrapper Calls --------------------------

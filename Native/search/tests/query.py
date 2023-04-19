@@ -17,7 +17,7 @@ class search_ret(ctypes.Structure):
     _fields_ = [
         ("k", ctypes.c_int),
         ("distances", ctypes.POINTER(ctypes.c_float)),
-        ("urls", ctypes.POINTER(ctypes.c_char)),
+        ("urls",  ctypes.POINTER(ctypes.c_char_p)),
     ]
 
 # Load the required dependencies
@@ -38,7 +38,7 @@ search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.load_model(b"../data/model.q.ftz")
 
 search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
-search_dll.update_index(vectors_path.encode("utf-8"))
+#search_dll.update_index(vectors_path.encode("utf-8"))
 try:
     #search request from stdin
     while(True):
@@ -48,10 +48,10 @@ try:
         vector=embed(b"",query.encode("utf-8"))
 
         results = search_local(vector)
-
+        print(results)
         k=results.contents.k
         for i in range(k):
-            print(results.contents.urls[i*300:(i+1)*300].decode("utf-8").replace("\0", ""))
+            print(results.contents.urls[i].decode("utf-8").replace("\0", ""))
             print(results.contents.distances[i])
         print()
 
