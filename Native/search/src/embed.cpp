@@ -1,25 +1,10 @@
-#include <fastText.h>
-#include <iostream>
-#include <fstream>
-#include <string.h>
-#include <fcntl.h>
-#include <iostream>
-#include <regex>
-using namespace fasttext;
+#include "embed.h"
 
-
-FastText fastText;
-bool isFastTextInitialized = false;
-
-//load fasttex model
-extern "C"
 void load_model(char* path){
     fastText.loadModel(path);
     isFastTextInitialized=true;
 }
 
-//get dimensions of vectors used for given model
-extern "C"
 int get_vector_size(){
     if(!isFastTextInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
@@ -29,7 +14,6 @@ int get_vector_size(){
     return fastText.getDimension();
 }
 
-//pre process string for embedding
 std::string pre_process(std::string sentence){
 
 
@@ -80,7 +64,6 @@ std::string pre_process(std::string sentence){
 
 }
 
-//add vector to binary file
 int storeVector(std::string path, Vector vec){
 
     std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
@@ -140,8 +123,6 @@ int storeVector(std::string path, Vector vec){
     return 0;
 }
 
-//get sentence vectors
-extern "C"
 float* getVector(char* output, char* sentence){
     if(!isFastTextInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
