@@ -26,8 +26,8 @@ struct search_ret {
 
 
 /**
- * Class the contains all the data for Query - > Vectors - > Websites 
- * Function call info is the same as their corresponding python wrapper calls,
+ * The URLVectorIndex class contains all the data needed for Query - > Vectors - > Websites 
+ * Function calls info is the same as their corresponding python wrapper calls,
  * i.e update_index() <-> update() have the same documentation
  */
 class URLVectorIndex{
@@ -69,7 +69,6 @@ extern "C" {
      * @param urls_p        path to .bin of urls
      * @return              1 success -1 Error
      */
-    extern "C"
     int load_data(char* vectors_p, char* urls_p);
 
     /**

@@ -5,11 +5,24 @@
 #include <fcntl.h>
 #include <iostream>
 #include <regex>
+#include <unordered_map>
+#include <sstream>
 
 using namespace fasttext;
 
-FastText fastText;
+FastText fastText_model;
 bool isFastTextInitialized = false;
+
+class term_frequency{
+    private:
+        std::unordered_map<std::string, int> term_map;
+        int n_terms;
+
+    public:
+        term_frequency(const std::string& text);
+        ~term_frequency();
+       void TF_Vector(fasttext::Vector& svec,const std::string& text);
+};
 
 extern "C"{
     //load fasttex model

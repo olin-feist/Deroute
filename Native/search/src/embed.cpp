@@ -1,7 +1,65 @@
 #include "embed.h"
 
+
+term_frequency::term_frequency(const std::string& text){
+    std::istringstream text_stream (text);
+    
+    std::string sub_s;
+    //generate term frequency map
+    n_terms=0;
+    while (text_stream >> sub_s) {
+        
+        
+        auto ret = term_map.emplace(sub_s, 1);
+        
+        // Collision occurred
+        if (!ret.second) {
+            ret.first->second++;
+        }
+        n_terms++;
+    }
+
+}
+term_frequency::~term_frequency(){}
+
+void term_frequency::TF_Vector(fasttext::Vector& svec,const std::string& text){
+    svec.zero();
+    std::istringstream text_stream (text);
+    const Args args_ = fastText_model.getArgs();
+    std::shared_ptr<const Dictionary> dict_ = fastText_model.getDictionary();
+
+  
+        Vector vec(args_.dim);
+        std::string sentence;
+        std::getline(text_stream, sentence);
+        std::istringstream iss(sentence);
+        std::string word;
+        int32_t count = 0;
+        std::cerr<<"NEW"<<std::endl;
+        std::cerr<<term_map.size()<<" "<<n_terms<<std::endl;
+        while (iss >> word) {
+            
+            fastText_model.getWordVector(vec, word);
+            float freq_w = (float) term_map.at(word)/n_terms;
+            std::cerr<<word<<" "<<term_map.at(word)<<" "<<freq_w<<std::endl;
+           
+            real norm = vec.norm();
+            if (norm > 0) {
+                vec.mul(1.0 / norm);
+                vec.mul(freq_w);
+                svec.addVector(vec);
+                count++;
+            }
+        }
+        if (count > 0) {
+            svec.mul(1.0 / count);
+        }
+    
+}
+
+
 void load_model(char* path){
-    fastText.loadModel(path);
+    fastText_model.loadModel(path);
     isFastTextInitialized=true;
 }
 
@@ -11,7 +69,7 @@ int get_vector_size(){
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return -1;
     }
-    return fastText.getDimension();
+    return fastText_model.getDimension();
 }
 
 std::string pre_process(std::string sentence){
@@ -124,19 +182,23 @@ int storeVector(std::string path, Vector vec){
 }
 
 float* getVector(char* output, char* sentence){
+
     if(!isFastTextInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return NULL;
     }
-    int dimensions=fastText.getDimension();
+
+    int dimensions=fastText_model.getDimension();
     Vector svec(dimensions);
    
     std::string sentence_string(sentence);
     sentence_string=pre_process(sentence_string);
 
-    std::stringstream fstring_string(sentence_string);
-    fastText.getSentenceVector(fstring_string, svec); // compute first sentence vector
+    term_frequency tf(sentence_string);
+    tf.TF_Vector(svec,sentence_string);
+    //std::stringstream fstring_string(sentence_string);
+    //fastText_model.getSentenceVector(fstring_string, svec); // compute first sentence vector
     
     //normalize
     float norm  = svec.norm();

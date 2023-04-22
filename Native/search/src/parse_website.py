@@ -76,11 +76,25 @@ def parse_website(url,url_path,debug):
     # Find the element in the HTML
     header = soup.find('header')
     head = soup.find('head')
+    maths = soup.find_all('math')
+    annotations = soup.find_all('annotation')
+    mstyles = soup.find_all('mstyle')
+    
     # Remove the element from the HTML
     if header:
         header.decompose()
+
     if head:
         head.decompose()
+
+    for math in maths:
+        math.decompose()
+
+    for annotation in annotations:
+        annotation.decompose()
+
+    for mstyle in mstyles:
+        mstyle.decompose()
         
     updated_html = soup.encode("utf-8") #html after removing elements
 
