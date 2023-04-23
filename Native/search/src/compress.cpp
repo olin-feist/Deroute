@@ -1,20 +1,21 @@
-#include <iostream>
-#include <fstream>
-#include <string.h>
-#include <iostream>
-#include <regex>
-#include <sstream>
+#include "compress.h"
 
 #define MAX_COUNT 200000
 
 void compress(std::string path, std::string out_path){
     std::ifstream file;
 
+    if(path.substr(path.find_last_of(".") + 1) != "vec") {
+        std::cerr << "Error: File is not a .vec" << std::endl;
+    } 
+
     file.open(path);
     if(!file) {
         std::cerr << "Cannot open file!" << std::endl;
         return;
     } 
+
+
     std::string line;
     std::string word;
     int dimensions;
@@ -38,7 +39,7 @@ void compress(std::string path, std::string out_path){
         iss >> word;
 
         std::regex regex("^[A-Za-z]+$");
-
+        //only keep words with 
         if (std::regex_match(word, regex)) { 
             float* temp =  new float[dimensions];
             std::string float_s;
@@ -55,7 +56,7 @@ void compress(std::string path, std::string out_path){
             if(count>MAX_COUNT){
                 break;
             }
-            
+
             saved.emplace_back(word, temp);
             count++;
         } else {

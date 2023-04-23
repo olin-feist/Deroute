@@ -1,6 +1,7 @@
 #include "dictionary.h"
 #include <cmath>
 
+//Fowler–Noll–Vo hash function
 uint32_t Dictionary::hash(const std::string& str) const {
   uint32_t h = 2166136261;
   for (size_t i = 0; i < str.size(); i++) {
@@ -35,12 +36,12 @@ void Dictionary::load(const std::string& path){
     for(int i=0;i<entrys;i++){
         
         std::string word;
-        
+        //get word
         char c;
         while((c = in.get()) != 0) {
             word.push_back(c);
         }
-        
+        //load in vector
         int32_t id = get_id(word);
         words[i]=word;
         word2indx[id]=i;
@@ -56,6 +57,7 @@ int32_t Dictionary::get_id(const std::string& word){
     
     int32_t word2indxsize = word2indx.size();
     int32_t id = h % word2indxsize;
+    //look through has table
     while (word2indx[id] != -1 && words[word2indx[id]] != word) {
         id = (id + 1) %  word2indxsize;
     }
@@ -65,12 +67,13 @@ int32_t Dictionary::get_id(const std::string& word){
 void Dictionary::get_vector(Vector& vec, const std::string& word){
     
     vec.zero();
-    int32_t id = get_id(word);
+    int32_t id = get_id(word); // get word id
 
     //not a word in the dictionary
     if(word2indx[id]==-1)
         return;
 
+    //get vector
     for(int i=0;i<vec.size();i++){
         vec[i]+=dense_vectors[(word2indx[id]*dimensions)+i];
     }

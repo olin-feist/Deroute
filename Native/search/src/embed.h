@@ -12,17 +12,17 @@
 
 
 Dictionary vector_dict;
-bool isFastTextInitialized = false;
+bool isInitialized = false;
 
 class term_frequency{
     private:
-        std::unordered_map<std::string, int> term_map;
-        int n_terms;
+        std::unordered_map<std::string, int> term_map;      //Mapping of word to frequency
+        int n_terms;                                        //Number of total term
 
     public:
         term_frequency(const std::string& text);
         ~term_frequency();
-       void TF_Vector(Vector& svec,const std::string& text);
+       void TF_Vector(Vector& svec,const std::string& text); //Get average embeddings with weights applied
 };
 
 extern "C"{
