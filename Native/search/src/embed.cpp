@@ -62,11 +62,11 @@ void term_frequency::TF_Vector(Vector& svec,const std::string& text){
 
 void load_model(char* path){
     vector_dict.load(path);
-    isFastTextInitialized=true;
+    isInitialized=true;
 }
 
 int get_vector_size(){
-    if(!isFastTextInitialized){
+    if(!isInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return -1;
@@ -185,7 +185,7 @@ int store_vector(std::string path, Vector vec){
 
 float* getVector(char* output, char* sentence){
 
-    if(!isFastTextInitialized){
+    if(!isInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return NULL;

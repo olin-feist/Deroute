@@ -5,4 +5,6 @@
 #include <regex>
 #include <sstream>
 
+
+//compress .vec
 void compress(std::string path, std::string out_path);
