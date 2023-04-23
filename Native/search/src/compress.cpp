@@ -5,6 +5,8 @@
 #include <regex>
 #include <sstream>
 
+#define MAX_COUNT 200000
+
 void compress(std::string path, std::string out_path){
     std::ifstream file;
 
@@ -49,8 +51,13 @@ void compress(std::string path, std::string out_path){
             
                 temp[j]=f;
             }
-            count++;
+
+            if(count>MAX_COUNT){
+                break;
+            }
+            
             saved.emplace_back(word, temp);
+            count++;
         } else {
             continue;
         }

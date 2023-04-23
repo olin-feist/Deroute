@@ -16,7 +16,7 @@ set_target_properties(lsh PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST
 target_include_directories(lsh PRIVATE "C:/Program Files (x86)/faiss/include" "src/")
 target_link_libraries(lsh ${libfaiss})
 
-add_library(embed SHARED  src/embed.cpp)
+add_library(embed SHARED  src/embed.cpp src/dictionary.cpp src/vector.cpp)
 set_target_properties( embed PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST_DIR/../../bin/)
 target_include_directories(embed PRIVATE "C:/Program Files (x86)/fasttext/include/fasttext")
 target_link_libraries(embed ${libfasttext})

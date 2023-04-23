@@ -22,44 +22,46 @@ term_frequency::term_frequency(const std::string& text){
 }
 term_frequency::~term_frequency(){}
 
-void term_frequency::TF_Vector(fasttext::Vector& svec,const std::string& text){
+void term_frequency::TF_Vector(Vector& svec,const std::string& text){
     svec.zero();
     std::istringstream text_stream (text);
-    const Args args_ = fastText_model.getArgs();
-    std::shared_ptr<const Dictionary> dict_ = fastText_model.getDictionary();
 
   
-        Vector vec(args_.dim);
-        std::string sentence;
-        std::getline(text_stream, sentence);
-        std::istringstream iss(sentence);
-        std::string word;
-        int32_t count = 0;
-        std::cerr<<"NEW"<<std::endl;
-        std::cerr<<term_map.size()<<" "<<n_terms<<std::endl;
-        while (iss >> word) {
-            
-            fastText_model.getWordVector(vec, word);
-            float freq_w = (float) term_map.at(word)/n_terms;
-            std::cerr<<word<<" "<<term_map.at(word)<<" "<<freq_w<<std::endl;
-           
-            real norm = vec.norm();
-            if (norm > 0) {
-                vec.mul(1.0 / norm);
-                vec.mul(freq_w);
-                svec.addVector(vec);
-                count++;
-            }
+    Vector vec(vector_dict.get_dimensions());
+    std::string sentence;
+    std::getline(text_stream, sentence);
+    std::istringstream iss(sentence);
+    std::string word;
+    int32_t count = 0;
+    int zero_count=0;
+    for (const auto & [ key, freq ] : term_map) {
+        
+        vector_dict.get_vector(vec, key);
+        float freq_w = (float) freq/n_terms;
+        
+        float norm = vec.norm();
+        if(norm==0){
+            std::cout<<key<<std::endl;
+            zero_count++;
         }
-        if (count > 0) {
-            svec.mul(1.0 / count);
+
+        if (norm > 0) {
+            vec.mul(1.0 / norm);
+            vec.mul(freq_w);
+            svec.addVector(vec);
+            count++;
         }
+    }
+    std::cerr<<zero_count<<std::endl;
+    if (count > 0) {
+        svec.mul(1.0 / count);
+    }
     
 }
 
 
 void load_model(char* path){
-    fastText_model.loadModel(path);
+    vector_dict.load(path);
     isFastTextInitialized=true;
 }
 
@@ -69,7 +71,7 @@ int get_vector_size(){
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return -1;
     }
-    return fastText_model.getDimension();
+    return vector_dict.get_dimensions();
 }
 
 std::string pre_process(std::string sentence){
@@ -122,7 +124,7 @@ std::string pre_process(std::string sentence){
 
 }
 
-int storeVector(std::string path, Vector vec){
+int store_vector(std::string path, Vector vec){
 
     std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
     
@@ -189,7 +191,7 @@ float* getVector(char* output, char* sentence){
         return NULL;
     }
 
-    int dimensions=fastText_model.getDimension();
+    int dimensions=vector_dict.get_dimensions();
     Vector svec(dimensions);
    
     std::string sentence_string(sentence);
@@ -208,7 +210,7 @@ float* getVector(char* output, char* sentence){
     
     //if output path specified
     if(output[0]!='\0'){
-        storeVector(output,svec);
+        store_vector(output,svec);
         return nullptr;
     //write to stdout
     }else{

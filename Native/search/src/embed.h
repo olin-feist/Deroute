@@ -1,4 +1,3 @@
-#include <fastText.h>
 #include <iostream>
 #include <fstream>
 #include <string.h>
@@ -8,9 +7,11 @@
 #include <unordered_map>
 #include <sstream>
 
-using namespace fasttext;
+#include "dictionary.h"
+#include "vector.h"
 
-FastText fastText_model;
+
+Dictionary vector_dict;
 bool isFastTextInitialized = false;
 
 class term_frequency{
@@ -21,7 +22,7 @@ class term_frequency{
     public:
         term_frequency(const std::string& text);
         ~term_frequency();
-       void TF_Vector(fasttext::Vector& svec,const std::string& text);
+       void TF_Vector(Vector& svec,const std::string& text);
 };
 
 extern "C"{
