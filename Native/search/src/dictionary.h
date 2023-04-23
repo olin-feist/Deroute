@@ -6,23 +6,25 @@
 #include <sstream>
 #include <vector>
 
+#include "vector.h"
 
 class Dictionary{
     private:
         
         std::vector<int32_t> word2indx;
         std::vector<std::string> words;
-        const float* dense_vectors;
+        std::vector<float> dense_vectors;
         int dimensions;
         int entrys;
-        int bucket_size=200000;
+        int32_t bucket_size=3000000;
         
-        uint32_t Dictionary::hash(const std::string& str) const;
-        int32_t Dictionary::get_id(const std::string& word);
+        uint32_t hash(const std::string& str) const;
+        int32_t get_id(const std::string& word);
 
     public:
-        Dictionary(const std::string& path);
+        Dictionary();
         ~Dictionary();
-        const float* get_vector(const std::string& word);
-        inline int get_dimensions();
+        void load(const std::string& path);
+        void get_vector(Vector& vec, const std::string& word);
+        int get_dimensions();
 };

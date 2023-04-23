@@ -176,7 +176,7 @@ search_ret* URLVectorIndex::search(float* queries){
                 break;
             }
         }
-
+        
         //Check for too large k
         if(k > SIZE_MAX / 300) {
             std::cerr<<"Error: k is too large"<<std::endl;    
