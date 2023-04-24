@@ -221,5 +221,6 @@ float* getVector(char* output, char* sentence){
 
 }
 
-
-
+void free_ptr(void* ptr){
+    free(ptr);
+}

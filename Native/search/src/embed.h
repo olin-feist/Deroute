@@ -34,6 +34,10 @@ extern "C"{
 
     //get sentence vectors
     float* getVector(char* output, char* sentence);
+
+    //free getVector return
+    void free_ptr(void* ptr);
+    
 }
 
 //pre process string for embedding
