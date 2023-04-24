@@ -59,6 +59,7 @@ void compress(std::string path, std::string out_path){
 
             saved.emplace_back(word, temp);
             count++;
+            delete[] temp;
         } else {
             continue;
         }

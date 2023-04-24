@@ -117,7 +117,7 @@ def embed_query():
         buf += struct.pack('f', dense_vector[i])
 
     print("Created Vector, First 5 elements:",dense_vector[:5])
-
+    embed_dll.free_ptr(embed_dll)
     return jsonify({'vector': base64.b64encode(buf).decode('utf-8')})
 
 #search local database request
