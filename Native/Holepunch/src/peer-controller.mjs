@@ -4,12 +4,18 @@ import fetch from 'node-fetch';
 const results = { results: [] }
 let searching = false
 
-//BE -> SS -> SWARM
+export function pingSwarm() {
+    return isOnline
+}
+
+/* 
+ * Send a search request to the swarm with a json recieved from the search backend.
+ * returns a promise to the browser extension with results of search.
+ */ 
 export async function search(buf_with_embedded) {
     const embedded_search_val = JSON.stringify(buf_with_embedded)
     results.results = []
     searching = true
-
 
     sendSearch(embedded_search_val)
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -18,11 +24,11 @@ export async function search(buf_with_embedded) {
     return results
 }
 
-//SWARM -> SS -> SWARM
+/* 
+ * Process a search request from a peer.
+ * Sends a fetch with the search embedded buf and expects a url_list in a json back.
+ */
 export async function proccessSearch(vector) {
-    //TODO: Send to controller -> SS
-    // that call should be return an array of JSON objects
-    //i.e. return Controller.SS(buf_with_embedded)
     const response = await fetch(`http://127.0.0.1:5000/search`, {
         method: 'POST',
         headers: {
@@ -37,7 +43,8 @@ export async function proccessSearch(vector) {
     const data = await response.json();
     return data
 }
-//Used by peer.mjs
+
+//Used by peer.mjs, appends url to results
 export function recieveURL(url_list) {
     if (!searching) {
         return
@@ -46,12 +53,3 @@ export function recieveURL(url_list) {
         results.results.push(element)
     })
 }
-
-export function pingSwarm() {
-    return isOnline
-}
-
-// Broadcast stdin to all connections
-process.stdin.on('data', data => {
-    search(Buffer.from(data)).then((results) => console.log(results))
-})

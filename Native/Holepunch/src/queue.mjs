@@ -1,7 +1,7 @@
 //FIFO queue for storing propogated searches
 class Queue {
     que = []
-    max_length = 20
+    max_length = 64
 
     //discards First In if full
     push (obj){
