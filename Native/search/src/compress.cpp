@@ -2,6 +2,8 @@
 
 #define MAX_COUNT 200000
 
+
+
 void compress(std::string path, std::string out_path){
     std::ifstream file;
 
@@ -30,7 +32,7 @@ void compress(std::string path, std::string out_path){
     iss >> word;
     dimensions= stoi(word);
 
-    std::vector<std::pair<std::string,float*>> saved;
+    std::vector<std::pair<std::string,real*>> saved;
     
     int count=0;
     for(int i=0;i<entrys;i++){
@@ -41,25 +43,26 @@ void compress(std::string path, std::string out_path){
         std::regex regex("^[A-Za-z]+$");
         //only keep words with 
         if (std::regex_match(word, regex)) { 
-            float* temp =  new float[dimensions];
+
+            real* temp =  new real[dimensions];
             std::string float_s;
             for(int j=0;iss >> float_s;j++){
                 if(j>=dimensions){
                     std::cerr<<"Error: Dimensions Mismatch"<<std::endl;
                 }
 
-                float f=(float)stof(float_s);
+                real f=(real)stof(float_s);
             
                 temp[j]=f;
             }
 
-            if(count>MAX_COUNT){
-                break;
-            }
 
             saved.emplace_back(word, temp);
             count++;
-            delete[] temp;
+            if(count>=MAX_COUNT){
+                break;
+            }
+            
         } else {
             continue;
         }
@@ -72,7 +75,7 @@ void compress(std::string path, std::string out_path){
     for(const auto& p: saved){
         out.write((char*) p.first.c_str(), p.first.length());
         out.put(0);
-        out.write((char*) p.second, dimensions*sizeof(float));
+        out.write((char*) p.second, dimensions*sizeof(real));
         delete[] p.second;
     }
     

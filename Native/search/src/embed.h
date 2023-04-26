@@ -2,13 +2,14 @@
 #include <fstream>
 #include <string.h>
 #include <fcntl.h>
-#include <iostream>
 #include <regex>
 #include <unordered_map>
 #include <sstream>
 
+
 #include "dictionary.h"
 #include "vector.h"
+
 
 
 Dictionary vector_dict;
@@ -18,11 +19,12 @@ class term_frequency{
     private:
         std::unordered_map<std::string, int> term_map;      //Mapping of word to frequency
         int n_terms;                                        //Number of total term
+        int outlier;
 
     public:
         term_frequency(const std::string& text);
         ~term_frequency();
-       void TF_Vector(Vector& svec,const std::string& text); //Get average embeddings with weights applied
+       void TF_Vector(Vector& svec,const std::string& text); //Get document embeddings with weights applied to each word
 };
 
 extern "C"{
