@@ -45,7 +45,7 @@ void Dictionary::load(const std::string& path){
         int32_t id = get_id(word);
         words[i]=word;
         word2indx[id]=i;
-        in.read((char*) &dense_vectors[dimensions*i], sizeof(float)*dimensions);
+        in.read((char*) &dense_vectors[dimensions*i], sizeof(real)*dimensions);
     }
 
     in.close();
@@ -75,7 +75,7 @@ void Dictionary::get_vector(Vector& vec, const std::string& word){
 
     //get vector
     for(int i=0;i<vec.size();i++){
-        vec[i]+=dense_vectors[(word2indx[id]*dimensions)+i];
+        vec[i]+=(float) dense_vectors[(word2indx[id]*dimensions)+i];
     }
     
 }

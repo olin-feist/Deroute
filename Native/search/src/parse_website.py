@@ -74,18 +74,18 @@ def parse_website(url,url_path,debug):
     soup = BeautifulSoup(html.content, 'html.parser')
 
     # Find the element in the HTML
-    header = soup.find('header')
-    head = soup.find('head')
+    #header = soup.find('header')
+    #head = soup.find('head')
     maths = soup.find_all('math')
     annotations = soup.find_all('annotation')
     mstyles = soup.find_all('mstyle')
     
     # Remove the element from the HTML
-    if header:
-        header.decompose()
+    #if header:
+    #    header.decompose()
 
-    if head:
-        head.decompose()
+    #if head:
+    #    head.decompose()
 
     for math in maths:
         math.decompose()
@@ -112,8 +112,8 @@ def parse_website(url,url_path,debug):
             filtered_content+=paragraph.text
             filtered_content+='\n'
             
-    filtered_content = filtered_content.replace("\n", "")
-
+    #filtered_content = filtered_content.replace("\n", "")
+    
     return filtered_content
 
 

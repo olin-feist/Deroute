@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "vector.h"
+typedef _Float16 real;
 
 // Class to hold and manage the embedding dictionary
 class Dictionary{
@@ -14,7 +15,7 @@ class Dictionary{
         
         std::vector<int32_t> word2indx;                         //Holds index of word in dense vector matrix
         std::vector<std::string> words;                         //List of words in dictionary (1-1 to dense_vectors)
-        std::vector<float> dense_vectors;                       //List of dense vectors in dictionary
+        std::vector<real> dense_vectors;                       //List of dense vectors in dictionary
         int dimensions;                                         //Dimensions of vectors
         int entrys;                                             //Number of vectors
         int32_t bucket_size=3000000;                            //Buckets for hash table
