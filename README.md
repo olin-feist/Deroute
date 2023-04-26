@@ -8,6 +8,27 @@ Dèroute is an open source, fully decentralized, P2P search engine that is easil
 
 <a name="Distributed"/> <a>
 ## Distributed Networking
+The distributed networking provides communication functionalities between the [Browser Extension](#Browser) and [Local Search Engine](#search). When a search request is recieved from the [Browser Extension](#Browser), it sent to the [Local Search Engine](#search) and the connected swarm of peers. Each peer that recieves the search request will propogate it to their peers and process it, returning any relevant website urls back to the original searcher.
+### Swarm:
+The distributed networking is built ontop of [Hyperswarm](https://github.com/holepunchto/hyperswarm), a distributed networking stack for connecting peers. The current implementation uses the 'serverless' approach to swarm peers around a common topic. The common topic for Deroute is hardcoded to `e3cd816e9dd448a50ec7f89865e5399fadb7d41657baf9dac2c29c9cf734c790`. 
+### Search Request:
+Search requests are propogated to all connected peers. Upon recieving a search request for the first time, peers will process it on their [Local Search Engine](#search) to see if they have any relevant website urls to return back. Additionally, peers will propogate it on to their known peers. If they have recieved the search request recently (last 64 searches, configurable in [queue.mjs](https://github.com/olin-feist/Deroute/blob/main/Native/Holepunch/src/queue.mjs)), they will ignore it.
+
+The search payload is built as follows:
+```
+ 0: payload type
+ 1-65: original peer's public key
+ 65+: embedded search value in json format
+```
+### Search Response:
+Response payloads are built when the [Local Search Engine](#search) returns relevant website urls to send back. They are propogated back across the swarm and retrieved by the original searcher. Once recieved, they are appended to an array that contains all results and is returned to the [Browser Extension](#Browser) after 1 second via a timeout promise.
+
+The response payload is built as follows:
+```
+ 0: payload type
+ 1-65: original peer's public key
+ 65+: url list in json format
+```
 ### Usage:
 ```
 cd .\Native\Holepunch\

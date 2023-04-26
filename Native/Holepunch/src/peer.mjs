@@ -1,12 +1,15 @@
 import Hyperswarm from 'hyperswarm'
 import goodbye from 'graceful-goodbye'
-import crypto from 'hypercore-crypto'
 import b4a from 'b4a'
-import { Buffer } from 'node:buffer';
-
 import Queue from './queue.mjs'
 import * as peer_controller from './peer-controller.mjs'
-import { url } from 'node:inspector';
+
+export let isOnline = false
+
+const payload_type = {
+  search: 0,
+  response: 1
+}
 
 const swarm = new Hyperswarm()
 goodbye(() => {
@@ -14,13 +17,6 @@ goodbye(() => {
 })
 
 const prev_searches = new Queue();
-
-const payload_type = {
-  search: 0,
-  response: 1
-}
-
-export let isOnline = false
 
 // Keep track of all connections and console.log incoming data
 const conns = []
@@ -59,21 +55,6 @@ discovery.flushed().then(() => {
   isOnline = true
 })
 
-//Send search query
-export function sendSearch(embedded_search_val) {
-  let query = buildSearchPayload(embedded_search_val)
-  processPayload(query)
-  sendToPeers(query)
-}
-
-//Write to swarm
-const sendToPeers = (data) => {
-  prev_searches.push(`${data}`)
-
-  for (const conn of conns) {
-    conn.write(data)
-  }
-}
 /* 
  * Type: String
  * with index 0 being the payload type, index 1 to 65 being the users key,
@@ -95,7 +76,22 @@ const buildResponsePayload = (user_key, url_list) => {
   return b4a.from(d)
 }
 
-//proccess payload and call respectve fucntions
+//Send search query
+export function sendSearch(embedded_search_val) {
+  let query = buildSearchPayload(embedded_search_val)
+  processPayload(query)
+  sendToPeers(query)
+}
+
+//Write to swarm
+const sendToPeers = (data) => {
+  prev_searches.push(`${data}`)
+
+  for (const conn of conns) {
+    conn.write(data)
+  }
+}
+
 async function processPayload(data) {
   const string_data = `${data}`
   const type = parseInt(string_data.slice(0, 1))
@@ -128,7 +124,6 @@ async function processPayload(data) {
   }
 }
 
-
 //process args
 let debug_mode = false;
 process.argv.forEach(element => {
@@ -137,8 +132,7 @@ process.argv.forEach(element => {
   }
 });
 
-
-//enable debug mode for message prints ;)
+//enable -d for message prints
 const debug = (msg) => {
   if (!debug_mode) {
     return
