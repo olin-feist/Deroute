@@ -35,6 +35,13 @@ cd .\Native\Holepunch\
 npm install
 node controller.mjs [-d]
 ```
+
+<a name="search"/> <a>
+## Local Search Engine
+The local search engine is responsible for the searching and storage of websites on a single user's machine. Using natural language processing and similarity search it will find results accurately and efficiently. Built using [FastText](https://github.com/facebookresearch/fastText/) and [FAISS](https://github.com/facebookresearch/faiss) the search engine is designed to be small and fast while still being able to yield relevant results. The search engine is primarily written in C++ with a high level controller written in Python. The external interface for the search engine works via a local http WSGI server.\
+\
+The model used in the distribution to create document and query embeddings is a reduced form of the model [cc.en.300](https://fasttext.cc/docs/en/crawl-vectors.html) from E. Grave, P. Bojanowski, P. Gupta, A. Joulin, T. Mikolov, Learning Word Vectors for 157 Languages. The model was trained on [Common Crawl](https://commoncrawl.org/) and [Wikipedia](https://www.wikipedia.org/) using the CBOW model.
+
 <a name="Browser"/> <a>
 ## Browser Extension
 ### Usage:
@@ -45,81 +52,5 @@ npm install
 - In Google Chrome, go to Extensions>Manage Extensions.
 - Make sure Developer Mode is on.
 - Click "Load Unpacked", then navigate to and select the `.\Extension\` folder.
-<a name="search"/> <a>
 
-## Local Search Engine
-The local search engine manages the searching and storage of websites on a single user's machine. The local search engine has three main functionalities: store a website, generate a representation for a query, and search a local database. The backend search engine runs on the local host on port 5000 and listens for requests via http.
-### Embedding a Website:
-Given a valid URL will generate and store a dense vector representation of the websited content.
-![alt text](https://i.imgur.com/2Ya6U6I.png)
-#### POST request URL
-``` shell
-http://127.0.0.1:5000/embedUrl
-```
-#### Example Config
-```javascript
-var options={
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ url: url}),
-}
-```
-#### Response
-```
-{'response': 'Error'}
-or
-{'response': 'Done'}
-```
-
-### Embedding a Query:
-Given a valid single line of text will generate and return a dense vector representation.
-![alt text](https://i.imgur.com/Ph37KYw.png)
-#### POST request URL
-``` shell
-http://127.0.0.1:5000/embedQuery
-```
-#### Example Config
-```javascript
-var options={
-  method: 'POST',
-  headers: {
-  'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ query: search_query}),
-};
-```
-#### Response
-```
-{vector: dense_vector}
-```
-### Searching:
-Given a vector returned by `embedQuery` will return a list of nearest neighbors related to the query.
-![alt text](https://i.imgur.com/mtIO7DI.png)
-#### POST request URL
-``` shell
-http://127.0.0.1:5000/search
-```
-#### Example Config
-```javascript
-var options={
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ vector: dense_vector}),
-}
-```
-#### Response
-```
-[{"dist":float,"url":url},
-...
-{"dist":float,"url":url}]
-```
-### Test Scripts:
-#### build_dataset.py
-Builds a dataset of websites taken from urls.txt
-#### query.py
-Querys dataset built by previous script
 
