@@ -143,7 +143,7 @@ search_ret* URLVectorIndex::search(float* queries){
     { // search queries
         
         faiss::RangeSearchResult result(nq);
-        float range_val=0.65;
+        float range_val=0.60;
         search_index.range_search(nq, queries,range_val, &result);
         
         
@@ -165,8 +165,9 @@ search_ret* URLVectorIndex::search(float* queries){
         
         
         //find elbow
-        float prev=0.0;
         int keep_indexes=0;
+
+        /*float prev=0.0;
         for (int i=1;i<k;i++){          
             float difference=(search_results[i-1].first)-(search_results[i].first);
             if(difference>=prev){
@@ -180,8 +181,9 @@ search_ret* URLVectorIndex::search(float* queries){
 
         if(k==1){
             keep_indexes=1;
-        }
-        //keep_indexes=k;
+        }*/
+
+        keep_indexes=k;
         //Check for too large k
         if(k > SIZE_MAX / 300) {
             std::cerr<<"Error: k is too large"<<std::endl;    

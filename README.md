@@ -5,12 +5,12 @@ Explore the [wiki](https://github.com/olin-feist/Deroute/wiki) for more in depth
 
 ## Table Of Contents
 * [Distributed Networking](#Distributed)
-* [Browser Extension](#Browser)
 * [Local Search Engine](#search)
+* [Browser Extension](#Browser)
 
 <a name="Distributed"/> <a>
 ## Distributed Networking
-The distributed networking provides communication functionalities between the [Browser Extension](#Browser) and [Local Search Engine](#search). When a search request is recieved from the [Browser Extension](#Browser), it sent to the [Local Search Engine](#search) and the connected swarm of peers. Each peer that recieves the search request will propogate it to their peers and process it, returning any relevant website urls back to the original searcher.
+The distributed networking provides communication functionalities between the [Browser Extension](#Browser) and [Local Search Engine](#search). When a search request is received from the [Browser Extension](#Browser), it sent to the [Local Search Engine](#search) and the connected swarm of peers. Each peer that receives the search request will propagate it to their peers and process it, returning any relevant website urls back to the original searcher.
 ### Usage:
 ```
 cd .\Native\Holepunch\

@@ -112,7 +112,7 @@ def parse_website(url,url_path,debug):
             filtered_content+=paragraph.text
             filtered_content+='\n'
             
-    #filtered_content = filtered_content.replace("\n", "")
+    filtered_content = filtered_content.replace("\n", "")
     
     return filtered_content
 

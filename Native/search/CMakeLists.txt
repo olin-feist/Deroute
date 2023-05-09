@@ -11,7 +11,7 @@ set_target_properties( search PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_
 target_include_directories(search PRIVATE "C:/Program Files (x86)/faiss/include" "src/")
 target_link_libraries(search ${libfaiss})
 
-add_library(lsh SHARED  src/local_hash.cpp src/utils.cpp src/dictionary.cpp)
+add_library(lsh SHARED  src/local_hash.cpp src/utils.cpp)
 set_target_properties(lsh PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST_DIR/../../bin/)
 target_include_directories(lsh PRIVATE "C:/Program Files (x86)/faiss/include" "src/")
 target_link_libraries(lsh ${libfaiss})

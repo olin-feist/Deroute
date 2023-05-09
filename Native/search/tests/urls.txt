@@ -15,7 +15,6 @@ https://en.wikipedia.org/wiki/Optimization_problem
 https://www.merriam-webster.com/dictionary/extravagant
 https://www.wwu.edu/
 https://www.mtu.edu/cs/what/#:~:text=Computer%20science%20focuses%20on%20the,the%20basis%20of%20all%20software.
-https://www.nationalgeographic.com/animals/mammals/facts/giraffe
 https://en.wikipedia.org/wiki/Timeline_of_the_2022_Russian_invasion_of_Ukraine:_phase_3
 https://www.dictionary.com/
 https://www.wwu.edu/majors
@@ -24,9 +23,7 @@ https://en.wikipedia.org/wiki/Germany
 https://en.wikipedia.org/wiki/Searching
 https://en.wikipedia.org/wiki/Five_color_theorem
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise       
-https://status.seaofthieves.com/
 https://en.wikipedia.org/wiki/Random_number_generation
-https://www.wikipedia.org/
 https://en.wikipedia.org/wiki/Search_algorithm
 https://en.wikipedia.org/wiki/Four_color_theorem
 https://en.wikipedia.org/wiki/Minecraft
@@ -37,3 +34,11 @@ https://en.wikipedia.org/wiki/The_Bangles
 https://en.wikipedia.org/wiki/The_Greatest_Story_Never_Told
 https://en.wikipedia.org/wiki/Tarrant_automobile
 https://en.wikipedia.org/wiki/U.S._Wheat_and_Barley_Scab_Initiative
+https://www.merriam-webster.com/dictionary/test
+https://www.dictionary.com/browse/test
+https://www.cdc.gov/coronavirus/2019-ncov/symptoms-testing/testing.html
+https://en.wikipedia.org/wiki/Giraffe
+https://en.wikipedia.org/wiki/Western_Washington_University
+https://www.britannica.com/animal/giraffe
+https://en.wikipedia.org/wiki/Color
+https://en.wikipedia.org/wiki/Black

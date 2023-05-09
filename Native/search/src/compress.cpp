@@ -3,7 +3,6 @@
 #define MAX_COUNT 200000
 
 
-
 void compress(std::string path, std::string out_path){
     std::ifstream file;
 
