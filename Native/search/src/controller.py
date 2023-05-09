@@ -8,7 +8,7 @@ import os;
 
 #generate dense vector
 def embed(file_path,text):
-    float_array_pointer=embed_dll.getVector(file_path, text)
+    float_array_pointer=embed_dll.get_vector(text, file_path)
     return float_array_pointer
 
 #search local database
@@ -44,16 +44,16 @@ libfasttext = ctypes.WinDLL('dlls/libfasttext.dll')
 # Load the main DLL's
 embed_dll = ctypes.WinDLL('dlls/libembed.dll')
 search_dll = ctypes.WinDLL('dlls/libsearch.dll')
-embed_dll.getVector.restype = ctypes.POINTER(ctypes.c_float)
+embed_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
 search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.get_vector_size.restype = ctypes.c_int
 
 
-embed_dll.load_model(b"data/model.q.ftz") #load model
-vectors_path="data/vectors.bin"           #vectors path
-urls_path="data/urls.bin"                 #urls path
-urls_size=300                             #urls file url size
-vector_size= embed_dll.get_vector_size()  #get vector size
+embed_dll.load_model(b"model.deroute.bin") #load model
+vectors_path="data/vectors.bin"            #vectors path
+urls_path="data/urls.bin"                  #urls path
+urls_size=300                              #urls file url size
+vector_size= embed_dll.get_vector_size()   #get vector size
 isDataLoaded=False
 
 app = Flask(__name__)

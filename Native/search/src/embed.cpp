@@ -1,7 +1,4 @@
 #include "embed.h"
-#include <cmath>
-
-
 
 term_frequency::term_frequency(const std::string& text){
     std::istringstream text_stream (text);
@@ -21,7 +18,7 @@ term_frequency::term_frequency(const std::string& text){
         n_terms++;
     }
 
-    //claculate outlier ceiling
+    //calculate outlier ceiling
     float avg,sd=0.0;
     for(const auto& [key,freq]: term_map){
         avg+=freq;
@@ -33,80 +30,24 @@ term_frequency::term_frequency(const std::string& text){
     }
     sd=sqrt(sd / n_terms);
     
-    outlier=ceil((2*sd)+avg);
+    outlier=ceil((10*sd)+avg); //max weight for words
 
     
 
 }
 term_frequency::~term_frequency(){}
 
-void term_frequency::TF_Vector(Vector& dvec,const std::string& text){
-    dvec.zero();
-
-    std::istringstream text_stream (text); //text string of document
-    int32_t para_count = 0; // count of paragraphs that can be represented
-    std::string paragraph;
-
-    //for every paragraph in text
-    while(std::getline(text_stream, paragraph)){
-
-        
-        std::istringstream iss(paragraph);
-        std::string word;
-        int32_t word_count = 0; // count of words that can be represented
-        
-        Vector pvec(vector_dict.get_dimensions()); //paragraph embedding
-        Vector vec(vector_dict.get_dimensions());  //word embedding
-
-        //for every word in paragraph
-        while (iss>>word) {
-            
-            vector_dict.get_vector(vec, word);
-            int freq=term_map.at(word);
-            if(freq>outlier){
-                freq=outlier;
-            }
-            float freq_w = (float) freq/n_terms;
-            
-            float norm = vec.norm();
-            if (norm > 0) {
-                vec.mul(1.0 / norm);
-                vec.mul(freq_w);
-                pvec.addVector(vec);
-                word_count++;
-            }
-        }
-
-        
-        if (word_count > 0) {
-            pvec.mul(1.0 / word_count);
-            dvec.addVector(pvec);
-            para_count++;
-        }
+float term_frequency::get_weight(const std::string& word){
+    int freq=term_map.at(word);
+    if(freq>outlier){
+        freq=outlier;
     }
-    
-    if (para_count > 0) {
-        dvec.mul(1.0 / para_count);
-    }
-   
-    
+    float freq_w = (float) freq/n_terms;
+
+    return freq_w;
     
 }
 
-
-void load_model(char* path){
-    vector_dict.load(path);
-    isInitialized=true;
-}
-
-int get_vector_size(){
-    if(!isInitialized){
-        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
-        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
-        return -1;
-    }
-    return vector_dict.get_dimensions();
-}
 
 std::string pre_process(std::string sentence){
 
@@ -119,13 +60,13 @@ std::string pre_process(std::string sentence){
         sentence.replace(pos, 1, "plus");                   // replace + with plus
 
 
-    std::regex non_ascii(R"([^\w\n])"); // remove non ascii characters
+    std::regex non_ascii(R"([^\w])"); // remove non ascii characters
     sentence = std::regex_replace(sentence, non_ascii, " ");
 
     std::transform(sentence.begin(), sentence.end(), sentence.begin(), // set lowercase
     [](unsigned char c){ return std::tolower(c); });
 
-    std::regex non_letter("[^a-zA-Z\n]+"); // remove non letter
+    std::regex non_letter("[^a-zA-Z]+"); // remove non letter
     sentence = std::regex_replace(sentence, non_letter, " ");
     
     std::regex single_words(R"(\b[b-hj-z]\b)"); // remove single words
@@ -140,7 +81,7 @@ std::string pre_process(std::string sentence){
     "she","shed","shell","shes","should","shouldnt","so","some","such","than","that","thats","the","their","theirs","them","themselves","then","there","theres","these","they",
     "theyd","theyll","theyre","theyve","this","those","through","to","too","under","until","up","very","was","wasnt","we","wed","well","were","weve","were","werent","what",
     "whats","when","whens","where","wheres","which","while","who","whos","whom","why","whys","with","wont","would","wouldnt","you","youd","youll","youre","youve","your","yours",
-    "yourself","yourselves"
+    "yourself","yourselves","many"
     };
 
     //remove stop words
@@ -152,18 +93,6 @@ std::string pre_process(std::string sentence){
     std::regex extra_spaces(R"(' +')"); // remove extra spaces
     sentence = std::regex_replace(sentence, non_letter, " ");
     
-    //remove empty lines
-    int myIndex = 0;
-    while (myIndex < sentence.length()) {
-    if (sentence[myIndex] == '\n') {
-        myIndex++;
-        while (myIndex < sentence.length() && (sentence[myIndex] == ' ' || sentence[myIndex] == '\t' || sentence[myIndex] == '\r' || sentence[myIndex] == '\n')) {
-        sentence.erase(myIndex, 1);
-        }
-    } else {
-        myIndex++;
-    }
-    }
     //sentence= std::regex_replace(sentence, std::regex(R"(^\\s+|\\s+$)"), ""); //remove trailing and leading whitespaces
 
     //sentence = std::regex_replace(sentence, std::regex(R"(^\s*$)"), ""); //remove empty lines
@@ -171,7 +100,7 @@ std::string pre_process(std::string sentence){
 
 }
 
-int store_vector(std::string path, Vector vec){
+int store_vector(std::string path, const Vector &vec){
 
     std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
     
@@ -230,7 +159,65 @@ int store_vector(std::string path, Vector vec){
     return 0;
 }
 
-float* getVector(char* output, char* sentence){
+void vectorize(std::string text, Vector &dvec){
+    dvec.zero();
+
+    text=pre_process(text); //pre process text
+    term_frequency tf(text); //build term frequency of text
+
+    std::istringstream text_stream (text); //text string of document
+    
+    Vector vec(vector_dict.get_dimensions());  //Word embedding
+    std::string word;                          //String for each word
+    int32_t word_count;                        //Count of words that can be represented in text
+
+    word_count = 0; 
+    
+    //for every word in text
+    while (text_stream>>word) {
+        vec.zero();
+        vector_dict.get_vector(vec, word); // get word embedding
+
+        
+        //normalize and scale by weight
+        float norm = vec.norm();
+        if (norm > 0) {
+            vec.mul(1.0 / norm);
+            vec.mul(tf.get_weight(word));
+            dvec.addVector(vec);
+            word_count++;
+        }
+    }
+
+    //average of words embeddings in paragraph
+    if (word_count > 0) {
+        dvec.mul(1.0 / word_count);
+    }
+
+    //normalize
+    float norm  = dvec.norm();
+    if (norm > 0) {
+        dvec.mul(1.0 / norm);
+    }
+}
+
+
+// -------------------------- Pyton Wrapper Calls --------------------------
+int get_vector_size(){
+    if(!isInitialized){
+        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
+        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
+        return -1;
+    }
+    return vector_dict.get_dimensions();
+}
+
+void load_model(char* path){
+    vector_dict.load(path);
+    isInitialized=true;
+}
+
+float* get_vector(char* text, const char* output_path = ""){
 
     if(!isInitialized){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
@@ -239,29 +226,18 @@ float* getVector(char* output, char* sentence){
     }
 
     int dimensions=vector_dict.get_dimensions();
-    Vector dvec(dimensions); //vector for document
-   
-    std::string sentence_string(sentence);
+    Vector vec(dimensions); //Vector for document
+    
+    vectorize(text,vec);    //Get embedding for text
 
-    sentence_string=pre_process(sentence_string);
-    
-    term_frequency tf(sentence_string);
-    tf.TF_Vector(dvec,sentence_string); //get document vector
-    
-    //normalize
-    float norm  = dvec.norm();
-    if (norm > 0) {
-        dvec.mul(1.0 / norm);
-    }
-    
     //if output path specified
-    if(output[0]!='\0'){
-        store_vector(output,dvec);
+    if(output_path[0]!='\0'){
+        store_vector(output_path,vec);
         return nullptr;
-    //write to stdout
+    //return vector
     }else{
         float* ret = (float*) malloc(dimensions*sizeof(float));
-        memcpy(ret, dvec.data(), dimensions*sizeof(float));
+        memcpy(ret, vec.data(), dimensions*sizeof(float));
         return ret;
     }
 
@@ -270,3 +246,4 @@ float* getVector(char* output, char* sentence){
 void free_ptr(void* ptr){
     free(ptr);
 }
+// -------------------------- Pyton Wrapper Calls --------------------------
