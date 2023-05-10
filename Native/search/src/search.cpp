@@ -20,8 +20,10 @@ URLVectorIndex::~URLVectorIndex(){
 
 //update index
 int URLVectorIndex::update(){
+    
     //check if database is loaded
     if(isLoaded){
+        std::unique_lock<std::shared_mutex> lock(rw_lock); //prevent read operations
 
         //get database files and check if they exist
         std::fstream file_vector(vectors_path , std::ios::in | std::ios::binary);
@@ -132,20 +134,19 @@ int URLVectorIndex::load(char* vectors_p, char* urls_p){
 
 //searching
 search_ret* URLVectorIndex::search(float* queries){
-    
+
     if(!isLoaded){
         std::cerr<<"Error: Database not loaded"<<std::endl;
         return NULL;
     }
     
-    
+    std::shared_lock<std::shared_mutex> lock(rw_lock); //prevent write operations
 
     { // search queries
         
         faiss::RangeSearchResult result(nq);
-        float range_val=0.60;
+        float range_val=0.70;
         search_index.range_search(nq, queries,range_val, &result);
-        
         
 
         idx_t* I=result.labels; //indexs
@@ -167,7 +168,7 @@ search_ret* URLVectorIndex::search(float* queries){
         //find elbow
         int keep_indexes=0;
 
-        /*float prev=0.0;
+        float prev=0.0;
         for (int i=1;i<k;i++){          
             float difference=(search_results[i-1].first)-(search_results[i].first);
             if(difference>=prev){
@@ -181,7 +182,7 @@ search_ret* URLVectorIndex::search(float* queries){
 
         if(k==1){
             keep_indexes=1;
-        }*/
+        }
 
         keep_indexes=k;
         //Check for too large k
@@ -204,12 +205,13 @@ search_ret* URLVectorIndex::search(float* queries){
             }
 
             //Add distances to return
-            ret->distances=(float*) malloc(k*sizeof(float));
+            ret->distances=(float*) malloc(keep_indexes*sizeof(float));
+
             for(int i=0;i<keep_indexes;i++){
                 ret->distances[i]=search_results[i].first;
             }
         }
-        
+
         return ret;
     }
     

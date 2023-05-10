@@ -49,9 +49,9 @@ void compress(std::string path, std::string out_path){
                 if(j>=dimensions){
                     std::cerr<<"Error: Dimensions Mismatch"<<std::endl;
                 }
-
+                
                 real f=(real)stof(float_s);
-            
+                
                 temp[j]=f;
             }
 

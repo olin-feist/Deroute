@@ -51,6 +51,7 @@ with open('urls.txt') as urls:
     for url in urls:
         count+=1
         web_content=parse_website(url,urls_path,False)
+ 
         embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
         print("Embedded URL: {}".format(url.strip())),
 

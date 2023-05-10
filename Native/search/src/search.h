@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <faiss/IndexFlat.h>
 #include <faiss/impl/AuxIndexStructures.h>
+#include <shared_mutex>
 
 #include "utils.h"
 
@@ -35,25 +36,26 @@ class URLVectorIndex{
         faiss::IndexFlatIP search_index;    // FAISS index that contains dense vectors
         std::vector<std::string> urls;      // List of urls that label the FAISS index
         int d;                              // Dimension
-        int nb;                             // entries
-        int nq;                             // number of queries
+        int nb;                             // Entries
+        int nq;                             // Number of queries
         char* vectors_path;                 // Path to dense vectors
         char* urls_path;                    // Path to URLS
         bool isLoaded;                      // Status of database
+        std::shared_mutex rw_lock;          // Shared mutex lock to prevent reads during writes
 
     
     public:
         URLVectorIndex();
         ~URLVectorIndex();
-        int load(char* vectors_p, char* urls_p);
-        int update();
-        search_ret* search(float* queries);
+        int load(char* vectors_p, char* urls_p);    // Load vectors and labels (URLS)
+        int update();                               // Update database in memory
+        search_ret* search(float* queries);         // Perform search on database
         
 };
 
 
 using idx_t = faiss::Index::idx_t;  // FAISS 64-bit int
-extern URLVectorIndex database;            // Database of Websites
+extern URLVectorIndex database;     // Database of Websites
 
 // Python Wrappers
 extern "C" {

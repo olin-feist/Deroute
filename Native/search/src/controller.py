@@ -49,7 +49,7 @@ search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.get_vector_size.restype = ctypes.c_int
 
 
-embed_dll.load_model(b"model.deroute.bin") #load model
+embed_dll.load_model(b"data/model.deroute.bin") #load model
 vectors_path="data/vectors.bin"            #vectors path
 urls_path="data/urls.bin"                  #urls path
 urls_size=300                              #urls file url size
@@ -138,21 +138,19 @@ def search():
     
     #search local database
     results = search_local(float_pointer)
-
+    
     if(results == ctypes.c_void_p(None)):
         return jsonify({'response': 'Error search failed'})
     
     ret =[]
-    print(results.contents.urls[0])
     k=results.contents.k
-    
+
     for i in range(k):
         single_res={}
         
         single_res["url"]=results.contents.urls[i].decode("utf-8").replace("\0", "")
-        single_res["dist"]=results.contents.distances[i]
+        single_res["dist"]=float("{:.4f}".format(results.contents.distances[i]))
         ret.append(single_res)
-
 
     free_search_results(results) #free struct
 
