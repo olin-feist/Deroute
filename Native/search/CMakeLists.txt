@@ -1,5 +1,6 @@
 project(Deroute)
 cmake_minimum_required(VERSION 3.25)
+set (CMAKE_CXX_STANDARD 17)
 
 set(libfaiss "C:/Program Files (x86)/faiss/lib/libfaiss.dll.a")
 set(libfasttext "C:/Program Files (x86)/fasttext/lib/libfasttext.dll.a")
@@ -24,3 +25,13 @@ target_link_libraries(embed ${libfasttext})
 add_executable(compress src/compress.cpp)
 set_target_properties( compress PROPERTIES RUNTIME_OUTPUT_DIRECTORY CMAKE_CURRENT_LIST_DIR/../../bin/)
 target_include_directories(compress PRIVATE "src/")
+
+set(PYTHON_SCRIPT build.py)
+set(PYTHON_SCRIPT_ARGS "py2exe")
+
+add_custom_target(controller
+    COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_SCRIPT} ${PYTHON_SCRIPT_ARGS}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building Controller"
+    DEPENDS embed lsh search
+)

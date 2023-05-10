@@ -7,7 +7,7 @@ sys.path.append("./src")
 
 depen  = [
 ('dlls',['./bin/libstdc++-6.dll', './bin/libgcc_s_seh-1.dll', './bin/libwinpthread-1.dll','./bin/mkl_rt.2.dll','./bin/mkl_intel_thread.2.dll','./bin/libgomp-1.dll','./bin/libfaiss.dll','./bin/libfasttext.dll','./bin/libembed.dll','./bin/libsearch.dll']),
-('data',["./data/model.q.ftz"]),
+('data',["./data/model.deroute.bin"]),
 ('stoplists',["./stoplists/English.txt"])
 ]
 

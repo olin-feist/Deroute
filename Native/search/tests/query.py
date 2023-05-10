@@ -1,4 +1,5 @@
 import ctypes
+import timeit
 
 def embed(file_path,text):
     float_array_pointer=embed_dll.get_vector(text, file_path)
@@ -38,22 +39,26 @@ search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.load_model(b"../bin/model.deroute.bin")
 
 search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
-#search_dll.update_index(vectors_path.encode("utf-8"))
+search_dll.update_index(vectors_path.encode("utf-8"))
+
 try:
     #search request from stdin
     while(True):
         query = input("Enter Query: ")
         print()
         print("Results:")
+        
+
         vector=embed(b"",query.encode("utf-8"))
 
         results = search_local(vector)
         embed_dll.free_ptr(results)
-        print(results)
+
+        end = timeit.default_timer()
         k=results.contents.k
         for i in range(k):
             print(results.contents.urls[i].decode("utf-8").replace("\0", ""))
-            print(results.contents.distances[i])
+            print("{:.4f}".format(results.contents.distances[i]))
         print()
 
 except KeyboardInterrupt:
