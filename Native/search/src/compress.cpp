@@ -3,17 +3,18 @@
 #define MAX_COUNT 200000
 
 
-void compress(std::string path, std::string out_path){
+int compress(std::string path, std::string out_path){
     std::ifstream file;
 
     if(path.substr(path.find_last_of(".") + 1) != "vec") {
         std::cerr << "Error: File is not a .vec" << std::endl;
+        return 1;
     } 
 
     file.open(path);
     if(!file) {
         std::cerr << "Cannot open file!" << std::endl;
-        return;
+        return 1;
     } 
 
 
@@ -81,7 +82,7 @@ void compress(std::string path, std::string out_path){
     std::cout<<"Saved "<<count<<" vectors of "<<dimensions<<" dimensions"<<std::endl;
     std::cout<<"Model is now "<<out.tellg()/1000000<<" MBs"<<std::endl;
     out.close();
-
+    return 0;
 }
 
 int main(int argc, char* argv[]){
@@ -90,5 +91,5 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    compress(argv[1],argv[2]);
+    return compress(argv[1],argv[2]);
 }

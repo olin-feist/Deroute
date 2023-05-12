@@ -6,4 +6,4 @@
 
 typedef _Float16 real;
 //compress .vec
-void compress(std::string path, std::string out_path);
+int compress(std::string path, std::string out_path);
