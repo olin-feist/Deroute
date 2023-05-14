@@ -1,6 +1,6 @@
 #include "compress.h"
 
-#define MAX_COUNT 200000
+#define MAX_COUNT 200000 //max number of words to keep
 
 
 int compress(std::string path, std::string out_path){
@@ -41,7 +41,7 @@ int compress(std::string path, std::string out_path){
         iss >> word;
 
         std::regex regex("^[A-Za-z]+$");
-        //only keep words with 
+        //only keep words with letters
         if (std::regex_match(word, regex)) { 
 
             real* temp =  new real[dimensions];
@@ -49,6 +49,11 @@ int compress(std::string path, std::string out_path){
             for(int j=0;iss >> float_s;j++){
                 if(j>=dimensions){
                     std::cerr<<"Error: Dimensions Mismatch"<<std::endl;
+                    for(const auto& p: saved){
+                        delete[] temp;
+                        delete[] p.second;
+                        return 1;
+                    }
                 }
                 
                 real f=(real)stof(float_s);
@@ -56,12 +61,12 @@ int compress(std::string path, std::string out_path){
                 temp[j]=f;
             }
 
-
             saved.emplace_back(word, temp);
+
             count++;
             if(count>=MAX_COUNT){
                 break;
-            }
+            }     
             
         } else {
             continue;
@@ -86,7 +91,7 @@ int compress(std::string path, std::string out_path){
 }
 
 int main(int argc, char* argv[]){
-    if(argc>3){
+    if(argc>3||argc<3){
         std::cerr<<"Error: expected <in> <out>"<<std::endl;   
         return 1;
     }

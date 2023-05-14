@@ -213,8 +213,10 @@ int get_vector_size(){
 }
 
 void load_model(char* path){
-    vector_dict.load(path);
-    isInitialized=true;
+    if(vector_dict.load(path)==0){
+        isInitialized=true;
+    }
+    
 }
 
 float* get_vector(char* text, const char* output_path = ""){

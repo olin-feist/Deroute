@@ -12,24 +12,27 @@ uint32_t Dictionary::hash(const std::string& str) const {
 }
 
 Dictionary::Dictionary()
-:word2indx(bucket_size, -1)
+:dimensions(0),
+entrys(0),
+BUCKETS(0)
 {}
 
 Dictionary::~Dictionary(){}
 
-void Dictionary::load(const std::string& path){
+int Dictionary::load(const std::string& path){
     std::fstream in(path, std::ios::in | std::ios::binary);
     if(!in) {
         std::cerr << "Cannot open file!" << std::endl;
-        return;
+        return 1;
     }
 
     in.read((char*) &entrys, sizeof(int));
     in.read((char*) &dimensions, sizeof(int));
     
-    int32_t word2intsize = std::ceil(entrys / 0.7);
-    word2indx.assign(word2intsize, -1);
-
+    BUCKETS= std::ceil(entrys / LOAD_FACTOR);
+    
+    word2indx.assign(BUCKETS, -1);
+    
     words.resize(entrys);
     dense_vectors.resize(dimensions*entrys);
     
@@ -49,22 +52,23 @@ void Dictionary::load(const std::string& path){
     }
 
     in.close();
+    return 0;
 }
 
-int32_t Dictionary::get_id(const std::string& word){
+int32_t Dictionary::get_id(const std::string& word) const{
     //get hash of word to find dense vector
     uint32_t h=hash(word);
     
-    int32_t word2indxsize = word2indx.size();
-    int32_t id = h % word2indxsize;
-    //look through has table
+    int32_t id = h % BUCKETS;
+    int32_t t=h % BUCKETS;
+    //look through hash table
     while (word2indx[id] != -1 && words[word2indx[id]] != word) {
-        id = (id + 1) %  word2indxsize;
+        id = (id + 1) %  BUCKETS;
     }
     return id;
 }
 
-void Dictionary::get_vector(Vector& vec, const std::string& word){
+void Dictionary::get_vector(Vector& vec, const std::string& word) const{
     
     vec.zero();
     int32_t id = get_id(word); // get word id
@@ -80,6 +84,6 @@ void Dictionary::get_vector(Vector& vec, const std::string& word){
     
 }
 
-int Dictionary::get_dimensions(){
+int Dictionary::get_dimensions() const{
     return dimensions;
 }

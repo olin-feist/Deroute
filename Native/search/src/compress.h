@@ -5,5 +5,7 @@
 #include <sstream>
 
 typedef _Float16 real;
-//compress .vec
+/**
+ * Compresses a .vec file by prunning words and using half precisions
+*/
 int compress(std::string path, std::string out_path);

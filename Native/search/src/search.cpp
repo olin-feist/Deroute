@@ -133,7 +133,7 @@ int URLVectorIndex::load(char* vectors_p, char* urls_p){
 }
 
 //searching
-search_ret* URLVectorIndex::search(float* queries){
+search_ret* URLVectorIndex::search(float* queries, float range=0.50) const{
 
     if(!isLoaded){
         std::cerr<<"Error: Database not loaded"<<std::endl;
@@ -145,8 +145,8 @@ search_ret* URLVectorIndex::search(float* queries){
     { // search queries
         
         faiss::RangeSearchResult result(nq);
-        float range_val=0.70;
-        search_index.range_search(nq, queries,range_val, &result);
+        
+        search_index.range_search(nq, queries,range, &result);
         
 
         idx_t* I=result.labels; //indexs
@@ -184,7 +184,7 @@ search_ret* URLVectorIndex::search(float* queries){
             keep_indexes=1;
         }
 
-        keep_indexes=k;
+        //keep_indexes=k;
         //Check for too large k
         if(k > SIZE_MAX / 300) {
             std::cerr<<"Error: k is too large"<<std::endl;    
