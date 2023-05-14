@@ -49,11 +49,11 @@ search_dll.search.restype = ctypes.POINTER(search_ret)
 embed_dll.get_vector_size.restype = ctypes.c_int
 
 
-embed_dll.load_model(b"data/model.deroute.bin") #load model
-vectors_path="data/vectors.bin"            #vectors path
-urls_path="data/urls.bin"                  #urls path
-urls_size=300                              #urls file url size
-vector_size= embed_dll.get_vector_size()   #get vector size
+embed_dll.load_model(b"data/model.deroute.bin")  #load model
+vectors_path="data/vectors.bin"                  #vectors path
+urls_path="data/urls.bin"                        #urls path
+urls_size=300                                    #urls file url size
+vector_size= embed_dll.get_vector_size()         #get vector size
 isDataLoaded=False
 
 app = Flask(__name__)
@@ -107,17 +107,21 @@ def embed_url():
 def embed_query():  
     data = request.get_json()
     query = data['query']
-    dense_vector=embed("",query.encode("utf-8"))
 
+    #get dense vector
+    dense_vector=embed("",query.encode("utf-8"))
     if(dense_vector == ctypes.c_void_p(None)):
         return jsonify({'response': 'Error embed failed'})
     
+    #convert float* to bytearray
     buf = bytearray()
     for i in range(vector_size):
         buf += struct.pack('f', dense_vector[i])
 
     print("Created Vector, First 5 elements:",dense_vector[:5])
-    embed_dll.free_ptr(dense_vector)
+
+    embed_dll.free_ptr(dense_vector) #free float*
+    
     return jsonify({'vector': base64.b64encode(buf).decode('utf-8')})
 
 #search local database request

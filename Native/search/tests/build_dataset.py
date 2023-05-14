@@ -1,6 +1,7 @@
 import ctypes
 import os
 import sys
+import time;
 sys.path.append("../src")
 from parse_website import parse_website
 
@@ -45,19 +46,26 @@ if os.path.exists(urls_path):
     os.remove(urls_path)
     print("Deleted urls.bin")
 
-
+start = time.perf_counter()
 count = 0
+avg = 0
 with open('urls.txt') as urls:
     for url in urls:
         count+=1
+        start_1 = time.perf_counter()
         web_content=parse_website(url,urls_path,False)
  
         embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+        
+        end_1 = time.perf_counter()
+        avg+=end_1-start_1
         print("Embedded URL: {}".format(url.strip())),
 
-
+end = time.perf_counter()
+avg/=count
 
 print()
 print("Embedded {} URLS".format(count))
+print("Duration: {:.4f}s Average: {:.4f}s".format((end-start),avg))
 print("Labels stored in urls.bin")
 print("Vectors stored in vectors.bin")

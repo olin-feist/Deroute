@@ -1,6 +1,6 @@
 #include "utils.h"
 /**
-* Documentation for all the local search engine functions
+* Documentation for all the local search engine functions (old)
 */
 
 namespace deroute{

@@ -41,15 +41,15 @@ class URLVectorIndex{
         char* vectors_path;                 // Path to dense vectors
         char* urls_path;                    // Path to URLS
         bool isLoaded;                      // Status of database
-        std::shared_mutex rw_lock;          // Shared mutex lock to prevent reads during writes
+        mutable std::shared_mutex rw_lock;  // Shared mutex lock to prevent reads during writes
 
     
     public:
         URLVectorIndex();
         ~URLVectorIndex();
-        int load(char* vectors_p, char* urls_p);    // Load vectors and labels (URLS)
-        int update();                               // Update database in memory
-        search_ret* search(float* queries);         // Perform search on database
+        int load(char* vectors_p, char* urls_p);                  // Load vectors and labels (URLS)
+        int update();                                             // Update database in memory
+        search_ret* search(float* queries, float range) const;    // Perform search on database
         
 };
 
