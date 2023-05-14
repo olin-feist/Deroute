@@ -105,11 +105,15 @@ def embed_url():
 #embed search query
 @app.route('/embedQuery', methods=['POST'])
 def embed_query():  
+    #get query from request
     data = request.get_json()
     query = data['query']
+    query=query.replace("+"," ")
+    print("Query: {}".format(query))
 
     #get dense vector
     dense_vector=embed("",query.encode("utf-8"))
+    
     if(dense_vector == ctypes.c_void_p(None)):
         return jsonify({'response': 'Error embed failed'})
     
@@ -143,8 +147,12 @@ def search():
     #search local database
     results = search_local(float_pointer)
     
-    if(results == ctypes.c_void_p(None)):
-        return jsonify({'response': 'Error search failed'})
+    #check for null return
+    try:
+       k=results.contents.k
+    except ValueError:
+        ret =[]
+        return jsonify(ret)
     
     ret =[]
     k=results.contents.k
