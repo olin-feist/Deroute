@@ -68,36 +68,40 @@ def embed_url():
     
     #prevent multiple edits to database
     mutex.acquire()
-    try:
-        
-        web_content=parse_website(url,urls_path,False) #parse website
-        if(web_content==-1):
-            return jsonify({'response': 'Error: Web parsing failed'})
-        
-        retrun_v=embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
 
-        if(retrun_v == ctypes.c_void_p(None)):
-            return jsonify({'response': 'Error embed failed'})
-        
-        #if first url being saved
-        if(not isDataLoaded):
-            erno=search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
-            if(erno==1):
-                print("Data successfully loaded")
-                isDataLoaded=True
-            else:
-                print("Error: Intial data load failed")
+   
+    web_content=parse_website(url,urls_path,False) #parse website
 
-        #update search index
-        else:
-            erno=search_dll.update_index()
-            if(erno==1):
-                print("Embedded ",url)
-            else:
-                print("Error: Failed to update search index with new URL")
-
-    finally:
+    if(web_content==-1): #if web parsing failed (i.e duplicate entry or bad url)
         mutex.release()
+        return jsonify({'response': 'Error: Web parsing failed'})
+    
+    retrun_v=embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+
+    if(retrun_v == ctypes.c_void_p(None)): #if embedding failed
+        mutex.release()
+        return jsonify({'response': 'Error embed failed'})
+    
+    #if first url being saved
+    if(not isDataLoaded):
+        erno=search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
+        if(erno==1):
+            print("Embedded ",url)
+            print("Data successfully loaded")
+            isDataLoaded=True
+        else:
+            print("Error: Intial data load failed")
+
+    #update search index
+    else:
+        erno=search_dll.update_index()
+        if(erno==1):
+            print("Embedded ",url)
+        else:
+            print("Error: Failed to update search index with new URL")
+
+
+    mutex.release()
 
     return jsonify({'response': 'Done'})
 
@@ -185,7 +189,7 @@ if __name__ == '__main__':
             print("Error: Intial database loading failed")
 
     from waitress import serve
-    serve(app, port=5000)
+    serve(app, port=5000,backlog=2000,connection_limit=200,threads=8)
 
 
 

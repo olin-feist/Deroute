@@ -136,7 +136,7 @@ int URLVectorIndex::load(char* vectors_p, char* urls_p){
 search_ret* URLVectorIndex::search(float* queries, float range=0.50) const{
 
     if(!isLoaded){
-        std::cerr<<"Error: Database not loaded"<<std::endl;
+        std::cerr<<"Warning: Database not loaded"<<std::endl;
         return NULL;
     }
     
