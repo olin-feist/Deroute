@@ -10,8 +10,8 @@
     "node-fetch": "^2.6.9"
   },
   "scripts": {
-    "start": "concurrently \"npm run startController\" \"npm run startFasttext\"",
-    "startFasttext": "cd ..\\dist && controller.exe",
+    "start": "concurrently \"npm run startController\" \"npm run localSearch\"",
+    "localSearch": "cd ..\\dist && controller.exe",
     "startController": "node controller.mjs"
   },
   "devDependencies": {
