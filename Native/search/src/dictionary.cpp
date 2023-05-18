@@ -60,7 +60,7 @@ int32_t Dictionary::get_id(const std::string& word) const{
     uint32_t h=hash(word);
     
     int32_t id = h % BUCKETS;
-    int32_t t=h % BUCKETS;
+    
     //look through hash table
     while (word2indx[id] != -1 && words[word2indx[id]] != word) {
         id = (id + 1) %  BUCKETS;
