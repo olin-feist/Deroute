@@ -13,19 +13,23 @@
 
 
 
-Dictionary vector_dict;
+Dictionary vector_dict; // Hash map of all dense vectors
 bool isInitialized = false;
 
 class term_frequency{
     private:
-        std::unordered_map<std::string, int> term_map;      //Mapping of word to frequency
-        int n_terms;                                        //Number of total term
-        int outlier;
+        std::unordered_map<std::string, int> term_map;      // Mapping of word to frequency
+        int n_terms;                                        // Number of total terms
+        int outlier;                                        // Outlier value for frequency
 
     public:
         term_frequency(const std::string& text);
         ~term_frequency();
-       float get_weight(const std::string& word); // get term frequency weight of word
+       float get_weight(const std::string& word);                    // Get term frequency weight of word
+       float get_weight(int freq);                                   // Get term frequency weight from frequency
+       inline const std::unordered_map<std::string, int>& get_map(){ // Get term frequency map
+            return term_map;
+       }
 };
 
 //pre process string for embedding

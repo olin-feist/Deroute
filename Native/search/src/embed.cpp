@@ -1,5 +1,6 @@
 #include "embed.h"
 
+// -------------------------- Term Frequency --------------------------
 term_frequency::term_frequency(const std::string& text){
     std::istringstream text_stream (text);
     
@@ -48,7 +49,19 @@ float term_frequency::get_weight(const std::string& word){
     
 }
 
+float term_frequency::get_weight(int freq){
+    if(freq>outlier){
+        freq=outlier;
+    }
+    float freq_w = (float) freq/n_terms;
 
+    return freq_w;
+    
+}
+// -------------------------- Term Frequency --------------------------
+
+
+// -------------------------- Embedding Calls --------------------------
 std::string pre_process(std::string sentence){
 
 
@@ -85,10 +98,14 @@ std::string pre_process(std::string sentence){
     };
 
     //remove stop words
-    for(std::string word:stopwords){
-        std::regex stop_words(R"(\b)" + word + R"(\b)");
-        sentence = std::regex_replace(sentence, stop_words, "");
+    std::string pattern = "\\b(";
+    for (const std::string& word : stopwords) {
+        pattern += word + "|";
     }
+    pattern.pop_back();
+    pattern += ")\\b";
+    std::regex re(pattern);
+    sentence  =  std::regex_replace(sentence, re, "");
 
     std::regex extra_spaces(R"(' +')"); // remove extra spaces
     sentence = std::regex_replace(sentence, non_letter, " ");
@@ -162,44 +179,44 @@ int store_vector(std::string path, const Vector &vec){
 void vectorize(std::string text, Vector &dvec){
     dvec.zero();
 
-    text=pre_process(text); //pre process text
-    term_frequency tf(text); //build term frequency of text
-
-    std::istringstream text_stream (text); //text string of document
+    text=pre_process(text);  // Pre process text
     
-    Vector vec(vector_dict.get_dimensions());  //Word embedding
-    std::string word;                          //String for each word
-    int32_t word_count;                        //Count of words that can be represented in text
+    term_frequency tf(text); // Build term frequency of text
+    
+    Vector vec(vector_dict.get_dimensions());  // Word embedding
+    int32_t word_count;                        // Count of words that can be represented in text
 
     word_count = 0; 
     
-    //for every word in text
-    while (text_stream>>word) {
+    // For every word in term frequency map (set of unique words in text)
+    for (const auto & [ word, freq ]: tf.get_map()) {
         vec.zero();
-        vector_dict.get_vector(vec, word); // get word embedding
+        vector_dict.get_vector(vec, word); // Get word embedding
 
-        
-        //normalize and scale by weight
+        // Normalize and scale by weight
         float norm = vec.norm();
         if (norm > 0) {
             vec.mul(1.0 / norm);
-            vec.mul(tf.get_weight(word));
+            vec.mul(tf.get_weight(freq)); // Get term frequency weight
+            vec.mul(freq);                // Scale by frequency to simulate adding number of words
             dvec.addVector(vec);
-            word_count++;
+            word_count+=freq;
         }
     }
 
-    //average of words embeddings in paragraph
+    // Average of word embeddings in text
     if (word_count > 0) {
         dvec.mul(1.0 / word_count);
     }
 
-    //normalize
+    // Normalize
     float norm  = dvec.norm();
     if (norm > 0) {
         dvec.mul(1.0 / norm);
     }
 }
+
+// -------------------------- Embedding Calls --------------------------
 
 
 // -------------------------- Pyton Wrapper Calls --------------------------
