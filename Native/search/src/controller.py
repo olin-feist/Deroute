@@ -8,17 +8,17 @@ import os;
 
 #generate dense vector
 def embed(file_path,text):
-    float_array_pointer=embed_dll.get_vector(text, file_path)
+    float_array_pointer=deroute_dll.get_vector(text, file_path)
     return float_array_pointer
 
 #search local database
 def search_local(query):
-    search_results=search_dll.search(query)
+    search_results=deroute_dll.search(query)
     return search_results
 
 #free struct returned by search
 def free_search_results(struct_ptr):
-    search_dll.delete_struct(struct_ptr)
+    deroute_dll.delete_struct(struct_ptr)
 
 #search result struct
 class search_ret(ctypes.Structure):
@@ -42,18 +42,17 @@ libfaiss = ctypes.WinDLL('dlls/libfaiss.dll')
 libfasttext = ctypes.WinDLL('dlls/libfasttext.dll')
 
 # Load the main DLL's
-embed_dll = ctypes.WinDLL('dlls/libembed.dll')
-search_dll = ctypes.WinDLL('dlls/libsearch.dll')
-embed_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
-search_dll.search.restype = ctypes.POINTER(search_ret)
-embed_dll.get_vector_size.restype = ctypes.c_int
+deroute_dll = ctypes.WinDLL('dlls/libderoute.dll')
+deroute_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
+deroute_dll.search.restype = ctypes.POINTER(search_ret)
+deroute_dll.get_vector_size.restype = ctypes.c_int
 
 
-embed_dll.load_model(b"data/model.deroute.bin")  #load model
+deroute_dll.load_model(b"data/model.deroute.bin")  #load model
 vectors_path="data/vectors.bin"                  #vectors path
 urls_path="data/urls.bin"                        #urls path
 urls_size=300                                    #urls file url size
-vector_size= embed_dll.get_vector_size()         #get vector size
+vector_size= deroute_dll.get_vector_size()         #get vector size
 isDataLoaded=False
 
 app = Flask(__name__)
@@ -84,7 +83,7 @@ def embed_url():
     
     #if first url being saved
     if(not isDataLoaded):
-        erno=search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
+        erno=deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
         if(erno==1):
             print("Embedded ",url)
             print("Data successfully loaded")
@@ -94,7 +93,7 @@ def embed_url():
 
     #update search index
     else:
-        erno=search_dll.update_index()
+        erno=deroute_dll.update_index()
         if(erno==1):
             print("Embedded ",url)
         else:
@@ -128,7 +127,7 @@ def embed_query():
 
     print("Created Vector, First 5 elements:",dense_vector[:5])
 
-    embed_dll.free_ptr(dense_vector) #free float*
+    deroute_dll.free_ptr(dense_vector) #free float*
     
     return jsonify({'vector': base64.b64encode(buf).decode('utf-8')})
 
@@ -181,7 +180,7 @@ if __name__ == '__main__':
 
     if(os.path.isfile(vectors_path) and os.path.isfile(urls_path)):
         isDataLoaded=True
-        erno=search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))       
+        erno=deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))       
 
         if(erno==1):
             print("Database successfully loaded")

@@ -1,75 +1,64 @@
 #include "utils.h"
-/**
-* Documentation for all the local search engine functions (old)
-*/
+#include "search.h"
+#include "embed.h"
+
 
 namespace deroute{
-    namespace search{ 
+    Model model = deroute::Model();                           // Search index of websites
+    SearchIndex database = deroute::SearchIndex();            // Database of Websites
+}
 
-        /**
-         * Return type for search
-         * @param k          number of results found
-         * @param distances  pointer to list of distance
-         * @param urls       pointer to list of urls
-         */
-        struct search_ret { 
-            int k;
-            float* distances;
-            char** urls;
-        };
-        
-        /**
-         * Update the current database in memory with new content from local file
-         * @return              1 success -1 Error
-         */
-        int update_index();
 
-        /**
-         * Load vectors and their corresponding labels (URLS) into memory
-         * @param vectors_p     path to .bin of vectors
-         * @param urls_p        path to .bin of urls
-         * @return              1 success -1 Error
-         */
-        int load_data(char* vectors_p, char* urls_p);
+//Python wrappers
+extern "C"{
 
-        /**
-         * Perform similarity search
-         * @param database_path path to .bin of vectors
-         * @param labels_path   path to .bin of labels
-         * @param queries       vector of single query
-         * @return struct containing results and distances
-         */
-        search_ret* search(char* database_path, char* labels_path, float* queries);
-    }
+    /**
+     * Python wrapper to load Deroute Model
+     * @param path          file path of model
+     */
+    void load_model(char* path);
 
-    namespace embed{
-        /**
-         * Get a dense vector for a givin sentence
-         * @param output     optional param to select where resulting vector goes
-         * @param sentence   string to be embeded
-         * @return           if output is empty string, return will be the resulting dense vector
-         */
-        float* getVector(char* output, char* sentence);
+    //get dimensions of vectors used for given model
+    int get_vector_size();
 
-        /**
-         * Get size of vectors being used
-         * @return size of vectors
-         */
-        int get_vector_size();
+    /**
+     * Python wrapper to get vector of text
+     * @param text          text to be embedded
+     * @param output_path   optional arg for if vector needs to be saved
+     * @return              return a vector if no output_path is set, return nullptr if output_path is set
+     */
+    float* get_vector( char* text, const char* output_path);
 
-        /**
-         * Load fastText model to used
-         * @param path path to model
-         */
-        void load_model(char* path);
-    }
+    //free getVector return
+    void free_ptr(float* ptr);
+    
+    /**
+     * Update the current database in memory with new content from local file
+     * @return              1 success -1 Error
+     */
+    int update_index();
 
-    namespace lsh{
-        /**
-         * Get a 128 bit hash of a vector database
-         * @param database_path  path to .bin that contains vectors
-         * @return 128 bit value
-         */
-        __uint128_t* local_hash(char* database_path);
-    }
+    /**
+     * Load vectors and their corresponding labels (URLS) into memory
+     * @param vectors_p     path to .bin of vectors
+     * @param urls_p        path to .bin of urls
+     * @return              1 success -1 Error
+     */
+    int load_search_index(char* vectors_p, char* urls_p);
+
+    /**
+     * Perform similarity search
+     * @param queries       vector of single query
+     * @return struct containing results and distances
+     */
+    deroute::search_ret* search(float* queries);
+
+    //for python wrappers to dealloc pointers
+    void free_mem(void* ptr);
+
+    //for python wrappers to dealloc list of pointers
+    void free_list(void** ptr,int k);
+
+    //for python wrappers to dealloc return results
+    void delete_struct(deroute::search_ret* ptr);
 }

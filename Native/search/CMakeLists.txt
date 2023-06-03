@@ -22,22 +22,17 @@ set(fasttext_include "${fasttext_path}/include/")
 
 add_compile_options(-O2)
 
-#Search
-add_library(search SHARED  src/search.cpp src/utils.cpp)
-set_target_properties( search PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(search PRIVATE ${faiss_include} "src/")
-target_link_libraries(search ${libfaiss})
+#Deroute Library
+add_library(deroute SHARED  src/deroute.cpp src/search.cpp src/utils.cpp src/embed.cpp src/dictionary.cpp src/vector.cpp)
+set_target_properties( deroute PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(deroute PRIVATE ${faiss_include} "src/")
+target_link_libraries(deroute ${libfaiss})
 
 #LSH
 add_library(lsh SHARED  src/local_hash.cpp src/utils.cpp)
 set_target_properties(lsh PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(lsh PRIVATE ${faiss_include} "src/")
 target_link_libraries(lsh ${libfaiss})
-
-#Embed
-add_library(embed SHARED  src/embed.cpp src/dictionary.cpp src/vector.cpp)
-set_target_properties( embed PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(embed PRIVATE "src/")
 
 #Compress
 add_executable(compress src/compress.cpp)
@@ -65,5 +60,17 @@ add_custom_target(controller
     COMMAND python ${PYTHON_SCRIPT} ${PYTHON_SCRIPT_ARGS}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Building Controller"
-    DEPENDS copy_dlls embed search
+    DEPENDS copy_dlls deroute
 )
+
+
+#Search (old) do not use
+add_library(search SHARED  src/search.cpp src/utils.cpp)
+set_target_properties( search PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(search PRIVATE ${faiss_include} "src/")
+target_link_libraries(search ${libfaiss})
+
+#Embed (old) do not use
+add_library(embed SHARED  src/embed.cpp src/dictionary.cpp src/vector.cpp)
+set_target_properties( embed PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(embed PRIVATE "src/")

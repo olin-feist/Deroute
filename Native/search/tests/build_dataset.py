@@ -6,7 +6,7 @@ sys.path.append("../src")
 from parse_website import parse_website
 
 def embed(file_path,text):
-    float_array_pointer=embed_dll.get_vector(text, file_path)
+    float_array_pointer=deroute_dll.get_vector(text, file_path)
     
     return float_array_pointer
 
@@ -32,11 +32,10 @@ libfaiss = ctypes.WinDLL('../bin/libfaiss.dll')
 libfasttext = ctypes.WinDLL('../bin/libfasttext.dll')
 
 # Load the main DLL's
-embed_dll = ctypes.WinDLL('../bin/libembed.dll')
-search_dll = ctypes.WinDLL('../bin/libsearch.dll')
-embed_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
-search_dll.search.restype = ctypes.POINTER(search_ret)
-embed_dll.load_model(b"../bin/model.deroute.bin")
+deroute_dll = ctypes.WinDLL('../bin/libderoute.dll')
+deroute_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
+deroute_dll.search.restype = ctypes.POINTER(search_ret)
+deroute_dll.load_model(b"../bin/model.deroute.bin")
 
 if os.path.exists(vectors_path):
     os.remove(vectors_path)
