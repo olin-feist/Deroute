@@ -9,10 +9,11 @@
 #include "vector.h"
 typedef _Float16 real;
 
+namespace deroute{
+
 // Class to hold and manage the embedding dictionary
 class Dictionary{
     private:
-        
         std::vector<int32_t> word2indx;                         // Holds index of word in dense vector matrix
         std::vector<std::string> words;                         // List of words in dictionary (1-1 to dense_vectors)
         std::vector<real> dense_vectors;                        // List of dense vectors in dictionary
@@ -30,4 +31,7 @@ class Dictionary{
         int load(const std::string& path);                            // Load model dictionary
         void get_vector(Vector& vec, const std::string& word) const;  // Get embedding for word
         int get_dimensions() const;                                   // Get dimensions
+        bool is_loaded() const;                                       // Check if Dictionary is loaded
 };
+
+}

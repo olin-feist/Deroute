@@ -1,6 +1,8 @@
 #include "search.h"
 
 
+namespace deroute{
+
 
 //deconstructor for search return
 search_ret::~search_ret() {
@@ -12,14 +14,14 @@ search_ret::~search_ret() {
 }
 
 
-URLVectorIndex::URLVectorIndex():nq(1), isLoaded(false){}   //constructor
-URLVectorIndex::~URLVectorIndex(){
+SearchIndex::SearchIndex():nq(1), isLoaded(false){}   //constructor
+SearchIndex::~SearchIndex(){
     free(vectors_path);
     free(urls_path);
 }  //deconstructor
 
 //update index
-int URLVectorIndex::update(){
+int SearchIndex::update(){
     
     //check if database is loaded
     if(isLoaded){
@@ -87,7 +89,7 @@ int URLVectorIndex::update(){
 }
 
 //load data
-int URLVectorIndex::load(char* vectors_p, char* urls_p){
+int SearchIndex::load(char* vectors_p, char* urls_p){
     if(isLoaded){
         std::cerr<<"Error: Database already loaded"<<std::endl;
         return -1;
@@ -133,7 +135,7 @@ int URLVectorIndex::load(char* vectors_p, char* urls_p){
 }
 
 //searching
-search_ret* URLVectorIndex::search(float* queries, float range=0.50) const{
+search_ret* SearchIndex::search(float* queries, float range=0.50) const{
 
     if(!isLoaded){
         std::cerr<<"Warning: Database not loaded"<<std::endl;
@@ -217,35 +219,4 @@ search_ret* URLVectorIndex::search(float* queries, float range=0.50) const{
     
 }
 
-
-URLVectorIndex database= URLVectorIndex(); //create database
-
-
-// -------------------------- Pyton Wrapper Calls --------------------------
-int update_index(){
-    return database.update();
 }
-
-int load_data(char* vectors_p, char* urls_p){
-    return database.load(vectors_p, urls_p);
-}
-
-search_ret* search(float* queries){
-    return database.search(queries);
-}
-
-void free_mem(void* ptr){
-    free(ptr);
-}
-
-void free_list(void** ptr,int k){
-    for(int i=0;i<k;i++){
-        free(ptr[i]);
-    }
-    free(ptr);
-}
-
-void delete_struct(search_ret* ptr){
-    delete ptr;
-}
-// -------------------------- Pyton Wrapper Calls --------------------------

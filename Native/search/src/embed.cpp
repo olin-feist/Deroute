@@ -1,5 +1,6 @@
 #include "embed.h"
 
+namespace deroute{
 // -------------------------- Term Frequency --------------------------
 term_frequency::term_frequency(const std::string& text){
     std::istringstream text_stream (text);
@@ -24,18 +25,17 @@ term_frequency::term_frequency(const std::string& text){
     for(const auto& [key,freq]: term_map){
         avg+=freq;
     }
-    avg=avg/n_terms;
+    avg=avg/term_map.size();
     
     for(const auto& [key,freq]: term_map) {
         sd += pow(freq - avg, 2);
     }
     sd=sqrt(sd / n_terms);
     
-    outlier=ceil((10*sd)+avg); //max weight for words
-
-    
+    outlier=ceil((5*sd)+avg); //max weight for words
 
 }
+
 term_frequency::~term_frequency(){}
 
 float term_frequency::get_weight(const std::string& word){
@@ -61,9 +61,17 @@ float term_frequency::get_weight(int freq){
 // -------------------------- Term Frequency --------------------------
 
 
-// -------------------------- Embedding Calls --------------------------
-std::string pre_process(std::string sentence){
 
+// -------------------------- Embedding Calls --------------------------
+
+Model::Model():
+isInitialized(false)
+{}
+
+Model::~Model()
+{}
+
+std::string Model::pre_process(std::string sentence) const{
 
     int pos;
     while ((pos = sentence.find("=")) != std::string::npos)
@@ -117,7 +125,7 @@ std::string pre_process(std::string sentence){
 
 }
 
-int store_vector(std::string path, const Vector &vec){
+int Model::store_vector(std::string path, const Vector &vec) const{
 
     std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
     
@@ -176,7 +184,7 @@ int store_vector(std::string path, const Vector &vec){
     return 0;
 }
 
-void vectorize(std::string text, Vector &dvec){
+void Model::vectorize(std::string text, Vector &dvec) const{
     dvec.zero();
 
     text=pre_process(text);  // Pre process text
@@ -216,53 +224,24 @@ void vectorize(std::string text, Vector &dvec){
     }
 }
 
-// -------------------------- Embedding Calls --------------------------
+bool Model::is_loaded() const{
+    return isInitialized;
+}
 
-
-// -------------------------- Pyton Wrapper Calls --------------------------
-int get_vector_size(){
-    if(!isInitialized){
-        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
-        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
-        return -1;
+int Model::load(const std::string& path){
+    if(!vector_dict.load(path)){
+       isInitialized=true;
+       return 0;
+    }else{
+        return 1;
     }
+}
+
+int Model::get_dimensions() const{
     return vector_dict.get_dimensions();
 }
-
-void load_model(char* path){
-    if(vector_dict.load(path)==0){
-        isInitialized=true;
-    }
-    
-}
-
-float* get_vector(char* text, const char* output_path = ""){
-
-    if(!isInitialized){
-        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
-        std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
-        return NULL;
-    }
-
-    int dimensions=vector_dict.get_dimensions();
-    Vector vec(dimensions); //Vector for document
-    
-    vectorize(text,vec);    //Get embedding for text
-
-    //if output path specified
-    if(output_path[0]!='\0'){
-        store_vector(output_path,vec);
-        return nullptr;
-    //return vector
-    }else{
-        float* ret = (float*) malloc(dimensions*sizeof(float));
-        memcpy(ret, vec.data(), dimensions*sizeof(float));
-        return ret;
-    }
+// -------------------------- Embedding Calls --------------------------
 
 }
 
-void free_ptr(void* ptr){
-    free(ptr);
-}
-// -------------------------- Pyton Wrapper Calls --------------------------
+

@@ -1,6 +1,8 @@
 #include "dictionary.h"
 #include <cmath>
 
+namespace deroute{
+
 //Fowler–Noll–Vo hash function
 uint32_t Dictionary::hash(const std::string& str) const {
   uint32_t h = 2166136261;
@@ -86,4 +88,6 @@ void Dictionary::get_vector(Vector& vec, const std::string& word) const{
 
 int Dictionary::get_dimensions() const{
     return dimensions;
+}
+
 }

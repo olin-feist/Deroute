@@ -2,12 +2,12 @@ import ctypes
 import timeit
 
 def embed(file_path,text):
-    float_array_pointer=embed_dll.get_vector(text, file_path)
+    float_array_pointer=deroute_dll.get_vector(text, file_path)
     
     return float_array_pointer
 
 def search_local(query):
-    search_results=search_dll.search(query)
+    search_results=deroute_dll.search(query)
     return search_results
 
 vectors_path="../data/vectors.bin"
@@ -32,14 +32,13 @@ libfaiss = ctypes.WinDLL('../bin/libfaiss.dll')
 libfasttext = ctypes.WinDLL('../bin/libfasttext.dll')
 
 # Load the main DLL's
-embed_dll = ctypes.WinDLL('../bin/libembed.dll')
-search_dll = ctypes.WinDLL('../bin/libsearch.dll')
-embed_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
-search_dll.search.restype = ctypes.POINTER(search_ret)
-embed_dll.load_model(b"../bin/model.deroute.bin")
+deroute_dll = ctypes.WinDLL('../bin/libderoute.dll')
+deroute_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
+deroute_dll.search.restype = ctypes.POINTER(search_ret)
+deroute_dll.load_model(b"../bin/model.deroute.bin")
 
-search_dll.load_data(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
-search_dll.update_index(vectors_path.encode("utf-8"))
+deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
+deroute_dll.update_index(vectors_path.encode("utf-8"))
 
 try:
     #search request from stdin
@@ -50,16 +49,21 @@ try:
         
 
         vector=embed(b"",query.encode("utf-8"))
-
+        
+        
         results = search_local(vector)
-        embed_dll.free_ptr(results)
-
+        
+        
         end = timeit.default_timer()
         k=results.contents.k
         for i in range(k):
             print(results.contents.urls[i].decode("utf-8").replace("\0", ""))
             print("{:.4f}".format(results.contents.distances[i]))
         print()
+
+        deroute_dll.free_ptr(vector) #free float*
+        deroute_dll.delete_struct(results) #free return struct
+        
 
 except KeyboardInterrupt:
     print()

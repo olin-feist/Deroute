@@ -11,10 +11,7 @@
 #include "dictionary.h"
 #include "vector.h"
 
-
-
-Dictionary vector_dict; // Hash map of all dense vectors
-bool isInitialized = false;
+namespace deroute {
 
 class term_frequency{
     private:
@@ -32,36 +29,39 @@ class term_frequency{
        }
 };
 
-//pre process string for embedding
-std::string pre_process(std::string sentence);
+//class to hold needed methods to create and save vectors
+class Model{
+    private:
+        Dictionary vector_dict;             // Hash map of all dense vectors
+        bool isInitialized;                 // Status of Model, i.e. loaded or unloaded
 
-//add vector to binary file
-int storeVector(std::string path, Vector vec);
+        //pre process string for embedding
+        std::string pre_process(std::string sentence) const;
 
-/**
- * get vector (embedding) for text
- * @param text          text to be embedded
- * @param dvec          vector representation of text
- */
-void vectorize(std::string text, Vector &dvec);
+    public:
+        Model();
+        ~Model();
+        //load in model, currently just loads in the dictionary
+        int load(const std::string& path);
 
-//Python wrappers
-extern "C"{
-    //load fasttex model
-    void load_model(char* path);
+        //add vector to binary file
+        int store_vector(std::string path, const Vector &vec) const;
 
-    //get dimensions of vectors used for given model
-    int get_vector_size();
+        /**
+         * get vector (embedding) for text
+         * @param text          text to be embedded
+         * @param dvec          vector representation of text
+         */
+        void vectorize(std::string text, Vector &dvec) const;
 
-    /**
-     * Python wrapper to get vector of text
-     * @param text          text to be embedded
-     * @param output_path   optional arg for if vector needs to be saved
-     * @return              return a vector if no output_path is set, return nullptr if output_path is set
-     */
-    float* get_vector( char* text, const char* output_path);
+        bool is_loaded() const;
 
-    //free getVector return
-    void free_ptr(void* ptr);
-    
+        int get_dimensions() const;
+
+
+};
+
+
+
 }
+
