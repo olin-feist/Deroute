@@ -7,8 +7,8 @@ import base64
 import os;
 
 #generate dense vector
-def embed(file_path,text):
-    float_array_pointer=deroute_dll.get_vector(text, file_path)
+def embed(file_path,text,url):
+    float_array_pointer=deroute_dll.get_vector(text, url, file_path)
     return float_array_pointer
 
 #search local database
@@ -48,9 +48,13 @@ deroute_dll.search.restype = ctypes.POINTER(search_ret)
 deroute_dll.get_vector_size.restype = ctypes.c_int
 
 
-deroute_dll.load_model(b"data/model.deroute.bin")  #load model
-vectors_path="data/vectors.bin"                  #vectors path
-urls_path="data/urls.bin"                        #urls path
+status=deroute_dll.load_model(b"data/model.deroute.bin")  #load model
+if(status==1):
+    print("Error: Failed to load Deroute Model")
+else:
+    print("Succesfully loaded Deroute Model")
+
+database_path="data/vectors.bin"                   #database path
 urls_size=300                                    #urls file url size
 vector_size= deroute_dll.get_vector_size()         #get vector size
 isDataLoaded=False
@@ -69,21 +73,24 @@ def embed_url():
     mutex.acquire()
 
    
-    web_content=parse_website(url,urls_path,False) #parse website
+    web_content=parse_website(url,False) #parse website
 
-    if(web_content==-1): #if web parsing failed (i.e duplicate entry or bad url)
+    if(web_content==-1): #if web parsing failed
         mutex.release()
         return jsonify({'response': 'Error: Web parsing failed'})
     
-    retrun_v=embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+    retrun_v=embed(database_path.encode("utf-8"),web_content.encode("utf-8"),url.encode("utf-8"))
 
-    if(retrun_v == ctypes.c_void_p(None)): #if embedding failed
+    #check for nullptr return
+    if(not retrun_v):
         mutex.release()
-        return jsonify({'response': 'Error embed failed'})
+        return jsonify({'response': 'Error embed url failed'})
     
+    deroute_dll.free_ptr(retrun_v) #free float*
+
     #if first url being saved
     if(not isDataLoaded):
-        erno=deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8")) #load database for searching 
+        erno=deroute_dll.load_search_index(database_path.encode("utf-8")) #load database for searching 
         if(erno==1):
             print("Embedded ",url)
             print("Data successfully loaded")
@@ -94,7 +101,7 @@ def embed_url():
     #update search index
     else:
         erno=deroute_dll.update_index()
-        if(erno==1):
+        if(erno==0):
             print("Embedded ",url)
         else:
             print("Error: Failed to update search index with new URL")
@@ -115,10 +122,10 @@ def embed_query():
     print("Query: {}".format(query))
 
     #get dense vector
-    dense_vector=embed("",query.encode("utf-8"))
+    dense_vector=embed(b"",query.encode("utf-8"),b"")
     
-    if(dense_vector == ctypes.c_void_p(None)):
-        return jsonify({'response': 'Error embed failed'})
+    if(not dense_vector):
+        return jsonify({'response': 'Error embed query failed'})
     
     #convert float* to bytearray
     buf = bytearray()
@@ -172,15 +179,13 @@ def search():
     return jsonify(ret)
 
 if __name__ == '__main__':
-    if(not os.path.isfile(vectors_path)):
-        print("Warning: Vectors file is not created yet")
+    if(not os.path.isfile(database_path)):
+        print("Warning: Database file is not created yet")
 
-    if(not os.path.isfile(urls_path)):
-        print("Warning: Urls file is not created yet")
 
-    if(os.path.isfile(vectors_path) and os.path.isfile(urls_path)):
+    if(os.path.isfile(database_path)):
         isDataLoaded=True
-        erno=deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))       
+        erno=deroute_dll.load_search_index(database_path.encode("utf-8"))       
 
         if(erno==1):
             print("Database successfully loaded")

@@ -44,7 +44,6 @@ int utils::add_vectors(float* v1, float* v2, int size){
 
 int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vector<std::string> &labels){
     std::ifstream file;
-
     file.open(path,std::ios::binary);
     if(!file) {
         std::cerr << "Error: Cannot open file!" << std::endl;
@@ -77,7 +76,7 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
     return 0;
 }
 
-int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vector<std::string> &labels, int idx){
+int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vector<std::string> &labels, int idx){    
     //get database files and check if they exist
     std::fstream database_file(path , std::ios::in | std::ios::binary);
     if(!database_file) {
@@ -87,6 +86,8 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
     
     int dimensions;
     database_file.read((char*) &dimensions, 4);
+
+    *d=dimensions; //set dimensions
 
     int entrys;
     database_file.read((char*) &entrys, 4); 
@@ -120,10 +121,10 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
 
     delete[] label;
 
-    return 1;
+    return 0;
 }
 
-int utils::write_database(std::string path, const Vector &vec, const std::string label){
+int utils::write_database(std::string path, const Vector &vec, std::string label){
     std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
     
     //if appending new vector to existing file
@@ -146,6 +147,10 @@ int utils::write_database(std::string path, const Vector &vec, const std::string
 
         char* c_label= new char[300];
 
+        //remove carriage returns and newlines
+        label.erase(std::remove(label.begin(), label.end(), '\r'), label.end());
+        label.erase(std::remove(label.begin(), label.end(), '\n'), label.end());
+
         //go through all entrys
         for(int i=0;i<entrys-1;i++){
             //get label and convert to string
@@ -163,7 +168,7 @@ int utils::write_database(std::string path, const Vector &vec, const std::string
 
         strcpy(c_label, label.c_str()); // set c string to label
 
-        memset(c_label+label.size()-1, 0, 300-label.size()); // add trailing 0's to fill buffer
+        memset(c_label+label.size(), 0, 300-label.size()); // add trailing 0's to fill buffer
 
         append_f.write(c_label, 300); // write label
 

@@ -1,9 +1,8 @@
 #include "utils.h"
 #include "search.h"
 #include "embed.h"
-#include <mutex>
 
-std::mutex file_lock;
+
 
 namespace deroute{
     Model model = Model();                           // Search index of websites
@@ -18,7 +17,7 @@ extern "C"{
      * Python wrapper to load Deroute Model
      * @param path          file path of model
      */
-    void load_model(char* path);
+    int load_model(char* path);
 
     //get dimensions of vectors used for given model
     int get_vector_size();
