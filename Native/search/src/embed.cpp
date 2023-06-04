@@ -125,63 +125,8 @@ std::string Model::pre_process(std::string sentence) const{
 
 }
 
-int Model::store_vector(std::string path, const Vector &vec) const{
-
-    std::fstream append_f(path, std::ios::out | std::ios::in | std::ios::binary);
-    
-    //if appending new vector to existing file
-    if(append_f.good()){
-        if(!append_f) {
-            std::cerr << "Cannot open file!" << std::endl;
-            return 1;
-        }
-        
-        //get dimensions the re write
-        int dimensions;
-        append_f.read((char*) &dimensions, 4);
-        append_f.seekp(0, std::ios_base::beg);
-        append_f.write((char*) &dimensions, 4);
-
-        //get elements, edit then re write
-        int elements;
-        append_f.read((char*) &elements, 4);
-        append_f.seekp(sizeof(int), std::ios_base::beg);
-        elements++;
-        append_f.write((char*) &elements, 4);
-
-        //append new vector
-        append_f.seekp(8+sizeof(float)*((elements-1)*dimensions), std::ios_base::beg);
-        for(int i=0;i<dimensions;i++){
-            append_f.write((char*) &vec[i], sizeof(float));
-        }
-
-        append_f.close();
-
-    //new file
-    }else{
-        std::ofstream write_f(path, std::ios::out | std::ios::binary);
-        if(!write_f) {
-            std::cerr << "Cannot open file!" << std::endl;
-            return 1;
-        }
-
-        std::string str; 
-        
-        int dimension=vec.size();
-        write_f.write((char*) &dimension, sizeof(int));
-
-        int elements=1;
-        write_f.write((char*) &elements, sizeof(int));
-
-        for(int i=0;i<dimension;i++){
-            write_f.write((char*) &vec[i], sizeof(float));
-        }
-        write_f.close();
-       
-    }
-
-    append_f.close();
-    return 0;
+int Model::store_vector(std::string path, const Vector &vec, const std::string label) const{
+    return utils::write_database(path,vec,label);
 }
 
 void Model::vectorize(std::string text, Vector &dvec) const{

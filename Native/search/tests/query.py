@@ -1,8 +1,8 @@
 import ctypes
 import timeit
 
-def embed(file_path,text):
-    float_array_pointer=deroute_dll.get_vector(text, file_path)
+def embed(file_path,text,url):
+    float_array_pointer=deroute_dll.get_vector(text, url, file_path)
     
     return float_array_pointer
 
@@ -10,8 +10,7 @@ def search_local(query):
     search_results=deroute_dll.search(query)
     return search_results
 
-vectors_path="../data/vectors.bin"
-urls_path="../data/urls.bin"
+database_path="../data/vectors.bin"
 
 #search result struct
 class search_ret(ctypes.Structure):
@@ -37,8 +36,8 @@ deroute_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
 deroute_dll.search.restype = ctypes.POINTER(search_ret)
 deroute_dll.load_model(b"../bin/model.deroute.bin")
 
-deroute_dll.load_search_index(vectors_path.encode("utf-8"),urls_path.encode("utf-8"))
-deroute_dll.update_index(vectors_path.encode("utf-8"))
+deroute_dll.load_search_index(database_path.encode("utf-8"))
+deroute_dll.update_index(database_path.encode("utf-8"))
 
 try:
     #search request from stdin
@@ -48,7 +47,7 @@ try:
         print("Results:")
         
 
-        vector=embed(b"",query.encode("utf-8"))
+        vector=embed(b"",query.encode("utf-8"),b"")
         
         
         results = search_local(vector)
