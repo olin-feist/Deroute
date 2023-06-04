@@ -1,11 +1,13 @@
 #include "utils.h"
 #include "search.h"
 #include "embed.h"
+#include <mutex>
 
+std::mutex file_lock;
 
 namespace deroute{
-    Model model = deroute::Model();                           // Search index of websites
-    SearchIndex database = deroute::SearchIndex();            // Database of Websites
+    Model model = Model();                           // Search index of websites
+    SearchIndex database = SearchIndex();            // Database of Websites
 }
 
 
@@ -27,7 +29,7 @@ extern "C"{
      * @param output_path   optional arg for if vector needs to be saved
      * @return              return a vector if no output_path is set, return nullptr if output_path is set
      */
-    float* get_vector( char* text, const char* output_path);
+    float* get_vector(char* text, const char* label,const char* output_path);
 
     //free getVector return
     void free_ptr(float* ptr);
@@ -40,11 +42,10 @@ extern "C"{
 
     /**
      * Load vectors and their corresponding labels (URLS) into memory
-     * @param vectors_p     path to .bin of vectors
-     * @param urls_p        path to .bin of urls
+     * @param database_p     path to .bin of labels and vectors
      * @return              1 success -1 Error
      */
-    int load_search_index(char* vectors_p, char* urls_p);
+    int load_search_index(char* database_p);
 
     /**
      * Perform similarity search

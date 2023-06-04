@@ -10,6 +10,7 @@
 
 #include "dictionary.h"
 #include "vector.h"
+#include "utils.h"
 
 namespace deroute {
 
@@ -45,7 +46,7 @@ class Model{
         int load(const std::string& path);
 
         //add vector to binary file
-        int store_vector(std::string path, const Vector &vec) const;
+        int store_vector(std::string path, const Vector &vec, const std::string label) const;
 
         /**
          * get vector (embedding) for text

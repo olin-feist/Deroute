@@ -44,8 +44,7 @@ class SearchIndex{
         int d;                              // Dimension
         int nb;                             // Entries
         int nq;                             // Number of queries
-        char* vectors_path;                 // Path to dense vectors
-        char* urls_path;                    // Path to URLS
+        char* database_path;                // Path to dense vectors
         bool isLoaded;                      // Status of database
         mutable std::shared_mutex rw_lock;  // Shared mutex lock to prevent reads during writes
 
@@ -53,7 +52,7 @@ class SearchIndex{
     public:
         SearchIndex();
         ~SearchIndex();
-        int load(char* vectors_p, char* urls_p);                  // Load vectors and labels (URLS)
+        int load(char* database_p);                               // Load vectors and labels (URLS)
         int update();                                             // Update database in memory
         search_ret* search(float* queries, float range) const;    // Perform search on database
         

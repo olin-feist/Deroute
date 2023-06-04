@@ -16,7 +16,7 @@ void load_model(char* path){
     
 }
 
-float* get_vector(char* text, const char* output_path = ""){
+float* get_vector(char* text, const char* label = "" ,const char* output_path = ""){
 
     if(!deroute::model.is_loaded()){
         std::cerr<<"Error: fastText model is not loaded"<<std::endl;
@@ -31,7 +31,8 @@ float* get_vector(char* text, const char* output_path = ""){
 
     //if output path specified
     if(output_path[0]!='\0'){
-        deroute::model.store_vector(output_path,vec);
+        //std::lock_guard<std::mutex> guard(file_lock);
+        deroute::model.store_vector(output_path,vec,label);
         return nullptr;
     //return vector
     }else{
@@ -50,8 +51,8 @@ int update_index(){
     return deroute::database.update();
 }
 
-int load_search_index(char* vectors_p, char* urls_p){
-    return deroute::database.load(vectors_p, urls_p);
+int load_search_index(char* database_p){
+    return deroute::database.load(database_p);
 }
 
 deroute::search_ret* search(float* queries){

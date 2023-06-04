@@ -5,13 +5,12 @@ import time;
 sys.path.append("../src")
 from parse_website import parse_website
 
-def embed(file_path,text):
-    float_array_pointer=deroute_dll.get_vector(text, file_path)
+def embed(file_path,text,url):
+    float_array_pointer=deroute_dll.get_vector(text, url, file_path)
     
     return float_array_pointer
 
-vectors_path="../data/vectors.bin"
-urls_path="../data/urls.bin"
+database_path="../data/vectors.bin"
 
 #search result struct
 class search_ret(ctypes.Structure):
@@ -37,13 +36,10 @@ deroute_dll.get_vector.restype = ctypes.POINTER(ctypes.c_float)
 deroute_dll.search.restype = ctypes.POINTER(search_ret)
 deroute_dll.load_model(b"../bin/model.deroute.bin")
 
-if os.path.exists(vectors_path):
-    os.remove(vectors_path)
+if os.path.exists(database_path):
+    os.remove(database_path)
     print("Deleted vectors.bin")
 
-if os.path.exists(urls_path):
-    os.remove(urls_path)
-    print("Deleted urls.bin")
 
 start = time.perf_counter()
 count = 0
@@ -52,9 +48,9 @@ with open('urls.txt') as urls:
     for url in urls:
         count+=1
         start_1 = time.perf_counter()
-        web_content=parse_website(url,urls_path,False)
+        web_content=parse_website(url,False)
  
-        embed(vectors_path.encode("utf-8"),web_content.encode("utf-8"))
+        embed(database_path.encode("utf-8"),web_content.encode("utf-8"),url.encode("utf-8"))
         
         end_1 = time.perf_counter()
         avg+=end_1-start_1

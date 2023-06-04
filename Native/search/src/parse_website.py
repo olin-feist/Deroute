@@ -6,8 +6,6 @@ import os.path
 import justext
 
 
-binary_buffer_size=300
-
 #verify input url is a url
 def verify_url(url):
     regex = re.compile(
@@ -22,28 +20,8 @@ def verify_url(url):
 
     return test
 
-#check for duplicate entries in urls database
-def check_dup(path,url):
-    #if file does not exist yet
-    if(not os.path.isfile(path)):
-        return True
 
-    #check for duplicates
-    with open(path, "rb") as url_bin:
-        url_b=url_bin.read(binary_buffer_size)
-        while(url_b):
-            
-            url_s=url_b.decode("utf-8").strip().replace("\0", "")
-
-            if(url_s==url):
-                return False
-
-            url_b=url_bin.read(binary_buffer_size)
-
-    return True
-
-
-def parse_website(url,url_path,debug):
+def parse_website(url,debug):
     url = url.strip()
 
     #check valid url
@@ -57,17 +35,6 @@ def parse_website(url,url_path,debug):
     if(not html.ok):
         print("Error: Response Code",html.status_code)
         return -1
-
-    #if debug mode is off
-    if(not debug):
-        urls_file_path=url_path
-        if(check_dup(urls_file_path,url)):
-            with open(urls_file_path, "ab") as url_bin:
-                url= url + "\0" * (binary_buffer_size - len(url))
-                url_bin.write(bytes(url, encoding="utf-8"))
-        else:
-            print("Error: Duplicate Entry")
-            return -1
 
 
     #html parsing

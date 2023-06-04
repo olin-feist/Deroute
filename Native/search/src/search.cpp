@@ -16,8 +16,7 @@ search_ret::~search_ret() {
 
 SearchIndex::SearchIndex():nq(1), isLoaded(false){}   //constructor
 SearchIndex::~SearchIndex(){
-    free(vectors_path);
-    free(urls_path);
+    free(database_path);
 }  //deconstructor
 
 //update index
@@ -27,107 +26,55 @@ int SearchIndex::update(){
     if(isLoaded){
         std::unique_lock<std::shared_mutex> lock(rw_lock); //prevent read operations
 
-        //get database files and check if they exist
-        std::fstream file_vector(vectors_path , std::ios::in | std::ios::binary);
-        std::fstream file_url(urls_path , std::ios::in | std::ios::binary);
-
-        if(!file_vector) {
-            std::cerr << "Error: could not open vectors file" << std::endl;
-            return -1;
-        }
-
-        if(!file_vector) {
-            std::cerr << "Error: could not open URLS file" << std::endl;
-            return -1;
-        }
-        
-        int dimensions;
-        file_vector.read((char*) &dimensions, 4);
-
-        int elements;
-        file_vector.read((char*) &elements, 4); 
-
-        int new_idx=(elements-nb); // new elements that have been added
-
-        if(new_idx==0){
-            std::cerr << "Warning: no new vectors to add" << std::endl;
+        float *vec;
+        int d_new;
+        int new_entries;
+        std::vector<std::string> new_labels;
+        //read in new vector
+        if(utils::read_database(database_path,&d_new,&new_entries,vec,new_labels,nb)){
             return 1;
         }
-        
-        float *vec = new float[new_idx*dimensions];
-
-        file_vector.seekp(8+sizeof(float)*((nb)*dimensions), std::ios_base::beg); //skip to new vectors
-
-        //get new vectors
-        for(int i=0;i<new_idx;i++){
-            file_vector.read((char*) &vec[dimensions*i], sizeof(float)*dimensions);
+        if(new_entries==0){ //nothing to add
+            return 0;
         }
-        file_vector.close();
-
-        search_index.add(new_idx, vec); //add new vectors
-
-        file_url.seekp(300*nb, std::ios_base::beg); //skip to new urls
-
-        //update urls
-        char* url= new char[300];
-        for(int i=0;i<new_idx;i++){
-            file_url.read(url,300);
-            urls.push_back(url);
+        if(d_new!=d){ // mismatch of dimensions
+            std::cerr<<"Error: Different dimensions"<<std::endl;
+            return 2;
         }
-
-        nb+=new_idx; // update count of entries
-
-        delete[] url;
+        urls.insert(std::end(urls), std::begin(new_labels), std::end(new_labels)); // add new labels
+        search_index.add(new_entries, vec); //add new vectors
+        nb+=new_entries; // update count of entries
         delete[] vec;
-
-        return 1;
-
+        return 0;
     }else{
         std::cerr<<"Error: Database is not loaded"<<std::endl;
-        return -1;
+        return 1;
     }
 }
 
 //load data
-int SearchIndex::load(char* vectors_p, char* urls_p){
+int SearchIndex::load(char* database_p){
     if(isLoaded){
         std::cerr<<"Error: Database already loaded"<<std::endl;
         return -1;
     }
 
     //save database paths
-    vectors_path = (char*)malloc(strlen(vectors_p) + 1);
-    urls_path = (char*)malloc(strlen(urls_p) + 1);
-    strcpy(vectors_path,vectors_p);
-    strcpy(urls_path,urls_p);
+    database_path = (char*)malloc(strlen(database_p) + 1);
+    strcpy(database_path,database_p);
 
-    //load vectors from vectors file
-    float* vectors =  utils::read_vectors(vectors_path, &d, &nb);    
-    if(vectors==NULL){
-        std::cerr<<"Error: No vectors file found"<<std::endl;
-        return -1;
-    }
 
-    //open URLS file
-    std::fstream file(urls_path , std::ios::in | std::ios::binary);
-    if(!file) {
-        std::cerr << "Error: No URLS file found" << std::endl;
+    //load vectors and labels from database file
+    float* vectors;
+    if(utils::read_database(database_path, &d, &nb,vectors,urls)){
+        std::cerr<<"Error: Reading database failed"<<std::endl;
         return -1;
-    }
-    
-    //load in URLS from saved file
-    char* url= new char[300];
-    for(int i=0;i<nb;i++){
-        file.read(url,300);
-        urls.push_back(url);
-    }
-    file.close();
+    }  
     
     search_index= faiss::IndexFlatIP(d);
     search_index.add(nb, vectors); // add vectors to the index
 
     delete[] vectors;
-    delete[] url;
 
     isLoaded = true;
 
@@ -142,7 +89,7 @@ search_ret* SearchIndex::search(float* queries, float range=0.50) const{
         return NULL;
     }
     
-    std::shared_lock<std::shared_mutex> lock(rw_lock); //prevent write operations
+    std::shared_lock<std::shared_mutex> lock(rw_lock); //prevent write operations to search index
 
     { // search queries
         
