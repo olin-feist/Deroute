@@ -3,23 +3,23 @@
 
 // -------------------------- Pyton Wrapper Calls --------------------------
 int get_vector_size(){
-    if(deroute::model.is_loaded()){
-        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
+    if(!deroute::model.is_loaded()){
+        std::cerr<<"Error: Deroute model is not loaded"<<std::endl;
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return -1;
     }
     return deroute::model.get_dimensions();
 }
 
-void load_model(char* path){
-    deroute::model.load(path);
+int load_model(char* path){
+    return deroute::model.load(path);
     
 }
 
 float* get_vector(char* text, const char* label = "" ,const char* output_path = ""){
 
     if(!deroute::model.is_loaded()){
-        std::cerr<<"Error: fastText model is not loaded"<<std::endl;
+        std::cerr<<"Error: Deroute model is not loaded"<<std::endl;
         std::cerr<<"Call load_model(char* path) to fix"<<std::endl;
         return NULL;
     }
@@ -31,9 +31,12 @@ float* get_vector(char* text, const char* label = "" ,const char* output_path = 
 
     //if output path specified
     if(output_path[0]!='\0'){
-        //std::lock_guard<std::mutex> guard(file_lock);
-        deroute::model.store_vector(output_path,vec,label);
-        return nullptr;
+        if(deroute::model.store_vector(output_path,vec,label)){
+            return nullptr;
+        }
+        float* ret = (float*) malloc(sizeof(float));
+        ret[0]=0;
+        return ret;
     //return vector
     }else{
         float* ret = (float*) malloc(dimensions*sizeof(float));

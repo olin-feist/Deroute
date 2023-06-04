@@ -21,7 +21,7 @@ SearchIndex::~SearchIndex(){
 
 //update index
 int SearchIndex::update(){
-    
+
     //check if database is loaded
     if(isLoaded){
         std::unique_lock<std::shared_mutex> lock(rw_lock); //prevent read operations
@@ -41,6 +41,7 @@ int SearchIndex::update(){
             std::cerr<<"Error: Different dimensions"<<std::endl;
             return 2;
         }
+
         urls.insert(std::end(urls), std::begin(new_labels), std::end(new_labels)); // add new labels
         search_index.add(new_entries, vec); //add new vectors
         nb+=new_entries; // update count of entries
