@@ -29,7 +29,7 @@ namespace utils{
     /**
      * Multiply v1 by v2 over size 
      * @param v1            vector to multiply into
-     * @param v2            scalar vector
+     * @param mult          scalar value
      * @param size          number of dimensions to mutliply to
      * @return              0 success 1 Error
      */                                                           
