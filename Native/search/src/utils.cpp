@@ -1,7 +1,8 @@
 #include "utils.h"
 
 constexpr int32_t DEROUTE_VERSION = 2;                      // Deroute file format version
-constexpr int32_t DEROUTE_FILEFORMAT_MAGIC_ID = 53274414;  // File format id
+constexpr int32_t DEROUTE_FILEFORMAT_MAGIC_ID = 53274414;   // File format id
+constexpr int32_t LABEL_BUFFER_SIZE = 300;                  // String buffer size of labels
 
 
 int utils::print_database(std::string path){
@@ -23,7 +24,7 @@ int utils::print_database(std::string path){
     for(int i=0;i<n;i++){
         std::cout<<"Label: "<<labels[i]<<"Vector: ";
         for(int j=0;j<(d/10);j++){
-            std::cout<<vec[j*i];
+            std::cout<<vec[(i*d)+j];
         }
         std::cout<<std::endl;
     }
@@ -57,17 +58,17 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
         return 1;
     }
     int dimensions;
-    int entrys;
+    int entries;
     file.read((char*) &dimensions, sizeof(int)); // dimensions
-    file.read((char*) &entrys, sizeof(int)); // database size
+    file.read((char*) &entries, sizeof(int)); // database size
 
-    vec = new float[dimensions*entrys];
+    vec = new float[dimensions*entries];
 
     //load in vectors and labels
-    char* label= new char[300];
-    for(int i=0;i<entrys;i++){
+    char* label= new char[LABEL_BUFFER_SIZE];
+    for(int i=0;i<entries;i++){
         //get label
-        file.read(label,300);
+        file.read(label,LABEL_BUFFER_SIZE);
         labels.push_back(label);
 
         //get vector
@@ -77,7 +78,7 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
     delete[] label;
     file.close();
     *d=dimensions;
-    *n=entrys;
+    *n=entries;
 
     return 0;
 }
@@ -97,10 +98,10 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
 
     *d=dimensions; //set dimensions
 
-    int entrys;
-    database_file.read((char*) &entrys, 4); 
+    int entries;
+    database_file.read((char*) &entries, 4); 
 
-    int new_idx=(entrys-idx); // new elements that have been added
+    int new_idx=(entries-idx); // new elements that have been added
 
     *n=new_idx;
     if(new_idx==0){
@@ -109,15 +110,15 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
     }
     
     vec = new float[new_idx*dimensions];
-    char* label= new char[300];
+    char* label= new char[LABEL_BUFFER_SIZE];
 
-    database_file.seekp(8+(sizeof(float)*((idx)*dimensions))+(300*idx), std::ios_base::beg); //skip to new entries
+    database_file.seekp((sizeof(float)*((idx)*dimensions))+(LABEL_BUFFER_SIZE*idx), std::ios_base::cur); //skip to new entries
 
     //get new vectors
     for(int i=0;i<new_idx;i++){
         
         //get label and add it
-        database_file.read(label,300);
+        database_file.read(label,LABEL_BUFFER_SIZE);
         labels.push_back(label);
 
         //get vector
@@ -150,27 +151,33 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
         int dimensions;
         append_f.read((char*) &dimensions, 4);
 
+        if(dimensions!=vec.size()){
+            append_f.close();
+            std::cerr << "Error: attempting to add vectors of different dimensions" << std::endl;
+            return 1;
+        }
 
-        //get entrys and increment
-        int entrys;
-        append_f.read((char*) &entrys, 4);
-        entrys++;
+        //get entries and increment
+        int entries;
+        append_f.read((char*) &entries, 4);
+        entries++;
 
-        char* c_label= new char[300];
+        char* c_label= new char[LABEL_BUFFER_SIZE];
 
         //remove carriage returns and newlines
         label.erase(std::remove(label.begin(), label.end(), '\r'), label.end());
         label.erase(std::remove(label.begin(), label.end(), '\n'), label.end());
 
-        //go through all entrys
-        for(int i=0;i<entrys-1;i++){
+        //go through all entries
+        for(int i=0;i<entries-1;i++){
             //get label and convert to string
-            append_f.read(c_label,300);
+            append_f.read(c_label,LABEL_BUFFER_SIZE);
             std::string s = c_label;
 
             //check duplicates
             if(!s.compare(label)){
                 std::cerr << "Error: Duplicate Entry" << std::endl;
+                append_f.close();
                 return 1;
             }
 
@@ -179,18 +186,18 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
 
         strcpy(c_label, label.c_str()); // set c string to label
 
-        memset(c_label+label.size(), 0, 300-label.size()); // add trailing 0's to fill buffer
+        memset(c_label+label.size(), 0, LABEL_BUFFER_SIZE-label.size()); // add trailing 0's to fill buffer
 
-        append_f.write(c_label, 300); // write label
+        append_f.write(c_label, LABEL_BUFFER_SIZE); // write label
 
-        //wirte vector
+        //write vector
         for(int i=0;i<dimensions;i++){
             append_f.write((char*) &vec[i], sizeof(float));
         }
 
-        //update entrys
+        //update entries
         append_f.seekp(sizeof(int)+8, std::ios_base::beg);
-        append_f.write((char*) &entrys, 4);
+        append_f.write((char*) &entries, 4);
 
         append_f.close();
 
@@ -211,18 +218,18 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
         int dimensions=vec.size(); 
         write_f.write((char*) &dimensions, sizeof(int));
 
-        //set entrys
-        int entrys=1;
-        write_f.write((char*) &entrys, sizeof(int));
+        //set entries
+        int entries=1;
+        write_f.write((char*) &entries, sizeof(int));
         
-        char* c_label= new char[300]; // cstring to hold label
+        char* c_label= new char[LABEL_BUFFER_SIZE]; // cstring to hold label
 
         strcpy(c_label, label.c_str()); // set c string to label
 
-        memset(c_label+label.size()-1, 0, 300-label.size()); // add trailing 0's to fill buffer
+        memset(c_label+label.size()-1, 0, LABEL_BUFFER_SIZE-label.size()); // add trailing 0's to fill buffer
        
         
-        write_f.write(c_label, 300); // write label
+        write_f.write(c_label, LABEL_BUFFER_SIZE); // write label
 
         //write vector
         for(int i=0;i<dimensions;i++){
