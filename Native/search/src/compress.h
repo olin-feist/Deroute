@@ -3,6 +3,7 @@
 #include <string.h>
 #include <regex>
 #include <sstream>
+#include "utils.h"
 
 typedef _Float16 real;
 /**
