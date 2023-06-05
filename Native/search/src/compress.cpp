@@ -75,6 +75,7 @@ int compress(std::string path, std::string out_path){
     file.close();
 
     std::fstream out(out_path, std::ios::out | std::ios::binary);
+    utils::sign_file(out);
     out.write((char*) &count, sizeof(int));
     out.write((char*) &dimensions, sizeof(int));
     for(const auto& p: saved){

@@ -50,8 +50,12 @@ with open('urls.txt') as urls:
         start_1 = time.perf_counter()
         web_content=parse_website(url,False)
  
-        embed(database_path.encode("utf-8"),web_content.encode("utf-8"),url.encode("utf-8"))
-        
+        return_v=embed(database_path.encode("utf-8"),web_content.encode("utf-8"),url.encode("utf-8"))
+        if(not return_v):
+            print("Error: Embedding Failed")
+            exit(1)
+            
+        deroute_dll.free_ptr(return_v) #free float*
         end_1 = time.perf_counter()
         avg+=end_1-start_1
         print("Embedded URL: {}".format(url.strip())),

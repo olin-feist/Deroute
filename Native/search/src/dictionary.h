@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "vector.h"
+#include "utils.h"
+
 typedef _Float16 real;
 
 namespace deroute{

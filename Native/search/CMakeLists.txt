@@ -35,7 +35,7 @@ target_include_directories(lsh PRIVATE ${faiss_include} "src/")
 target_link_libraries(lsh ${libfaiss})
 
 #Compress
-add_executable(compress src/compress.cpp)
+add_executable(compress src/compress.cpp src/utils.cpp)
 set_target_properties( compress PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(compress PRIVATE ${fasttext_include} "src/")
 target_link_libraries(compress ${libfasttext})

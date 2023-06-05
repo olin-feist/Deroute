@@ -1,29 +1,33 @@
 #include "utils.h"
 
-int utils::print_vectors(std::string path){
+constexpr int32_t DEROUTE_VERSION = 2;                      // Deroute file format version
+constexpr int32_t DEROUTE_FILEFORMAT_MAGIC_ID = 53274414;  // File format id
+
+
+int utils::print_database(std::string path){
     std::fstream file(path , std::ios::in | std::ios::binary);
     if(!file) {
         std::cerr << "Cannot open file!" << std::endl;
         return 1;
     }
+    int d;
+    int n;
+    float * vec;
+    std::vector<std::string> labels;
 
-    std::string str; 
-    int dimension;
-    file.read((char*) &dimension, sizeof(int));
-    std::cout<<dimension<<" ";
-    int elements;
-    
-    file.read((char*) &elements, sizeof(int));
-    std::cout<<elements<<std::endl;
-    float* vec= new float[dimension];
-    for(int i=0;i<elements;i++){
-        file.read((char*) vec, sizeof(float)*dimension);
-        for(int i=0;i<15;i++)
-            std::cout<<vec[i]<<", ";
-        std::cout<<"..."<<std::endl;
+    if(utils::read_database(path,&d, &n,vec,labels)){
+        std::cerr << "Error: Reading Database" << std::endl;
+        return 1;
+    }
+
+    for(int i=0;i<n;i++){
+        std::cout<<"Label: "<<labels[i]<<"Vector: ";
+        for(int j=0;j<(d/10);j++){
+            std::cout<<vec[j*i];
+        }
+        std::cout<<std::endl;
     }
     delete[] vec;
-
     return 0;
         
 }
@@ -43,13 +47,15 @@ int utils::add_vectors(float* v1, float* v2, int size){
 }
 
 int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vector<std::string> &labels){
-    std::ifstream file;
-    file.open(path,std::ios::binary);
+    std::fstream file;
+    file.open(path, std::ios::in |std::ios::binary);
     if(!file) {
         std::cerr << "Error: Cannot open file!" << std::endl;
         return 1;
     } 
-
+    if(!check_file(file)){
+        return 1;
+    }
     int dimensions;
     int entrys;
     file.read((char*) &dimensions, sizeof(int)); // dimensions
@@ -83,7 +89,9 @@ int utils::read_database(std::string path,int *d, int *n,float * &vec,std::vecto
         std::cerr << "Error: could not open database file" << std::endl;
         return 1;
     }
-    
+    if(!check_file(database_file)){
+        return 1;
+    }
     int dimensions;
     database_file.read((char*) &dimensions, 4);
 
@@ -133,12 +141,15 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
             std::cerr << "Cannot open file!" << std::endl;
             return 1;
         }
-        
-        //get dimensions the re write
+
+        if(!check_file(append_f)){
+            return 1;
+        }
+
+        //get dimensions
         int dimensions;
         append_f.read((char*) &dimensions, 4);
-        append_f.seekp(0, std::ios_base::beg);
-        append_f.write((char*) &dimensions, 4);
+
 
         //get entrys and increment
         int entrys;
@@ -178,7 +189,7 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
         }
 
         //update entrys
-        append_f.seekp(sizeof(int), std::ios_base::beg);
+        append_f.seekp(sizeof(int)+8, std::ios_base::beg);
         append_f.write((char*) &entrys, 4);
 
         append_f.close();
@@ -193,6 +204,8 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
             std::cerr << "Cannot open file!" << std::endl;
             return 1;
         }
+        
+        sign_file(write_f); // sign file
         
         //set dimensions
         int dimensions=vec.size(); 
@@ -222,4 +235,29 @@ int utils::write_database(std::string path, const Vector &vec, std::string label
     }
     append_f.close();
     return 0;
+}
+
+bool utils::check_file(std::fstream& in) {
+    //get magic id
+    int32_t magic;
+    in.read((char*)&(magic), sizeof(int32_t));
+    if (magic != DEROUTE_FILEFORMAT_MAGIC_ID) {
+        std::cerr << "Error: file format ID does not match" << std::endl;
+        return false;
+    }
+    //get file version
+    int32_t version;
+    in.read((char*)&(version), sizeof(int32_t));
+    if (version != DEROUTE_VERSION) {
+        std::cerr << "Error: Incorrect version" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+void utils::sign_file(std::ostream& out) {
+    const int32_t magic = DEROUTE_FILEFORMAT_MAGIC_ID;
+    const int32_t version = DEROUTE_VERSION;
+    out.write((char*)&(magic), sizeof(int32_t));
+    out.write((char*)&(version), sizeof(int32_t));
 }

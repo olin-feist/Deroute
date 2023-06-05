@@ -27,7 +27,9 @@ int Dictionary::load(const std::string& path){
         std::cerr << "Cannot open file!" << std::endl;
         return 1;
     }
-
+    if(!utils::check_file(in)){
+        return 1;
+    }
     in.read((char*) &entrys, sizeof(int));
     in.read((char*) &dimensions, sizeof(int));
     
